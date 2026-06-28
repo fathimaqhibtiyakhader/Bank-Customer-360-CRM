@@ -1,0 +1,808 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Veridian — Admin Panel</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&family=DM+Sans:wght@300;400;500&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --sage:#A2AE9D;--sage-l:#c8d1c4;--sage-d:#6a7a66;--sage-bg:#f0f3ef;
+  --crimson:#9B1313;--crimson-l:#f5e8e8;--crimson-d:#7a0e0e;
+  --navy:#272757;--navy-d:#1a1a3e;--navy-l:#3a3a72;--navy-bg:#eeeef6;
+  --white:#fff;--bg:#f7f6f3;
+  --text:#1a1a2e;--muted:#8a8a9a;--light:#b5b5c5;
+  --border:#e8e6e2;--sw:240px;
+  --green:#3a7a3a;--amber:#e09000;
+}
+html,body{height:100%;font-family:'DM Sans',sans-serif;font-size:14px;color:var(--text);background:var(--bg)}
+.app{display:flex;height:100vh;overflow:hidden;position:relative;z-index:1}
+
+/* ── SIDEBAR ── */
+.sb{width:var(--sw);flex-shrink:0;background:var(--navy-d);display:flex;flex-direction:column;position:relative;overflow:hidden}
+.sb::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 80% 60% at -20% 100%,rgba(155,19,19,.2) 0%,transparent 60%),radial-gradient(ellipse 60% 40% at 120% 0%,rgba(162,174,157,.1) 0%,transparent 55%);pointer-events:none}
+.sb-brand{padding:1.375rem 1.25rem .875rem;display:flex;align-items:center;gap:10px;border-bottom:1px solid rgba(255,255,255,.07);position:relative;z-index:1}
+.lmk{width:34px;height:34px;background:var(--sage);border-radius:8px;flex-shrink:0;position:relative;overflow:hidden}
+.lmk::before{content:'';position:absolute;width:17px;height:17px;border-radius:50%;border:2px solid var(--navy);top:50%;left:50%;transform:translate(-50%,-50%)}
+.lmk::after{content:'';position:absolute;width:8px;height:8px;background:var(--navy);border-radius:50%;top:50%;left:50%;transform:translate(-50%,-50%)}
+.bname{font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:500;color:#fff;letter-spacing:.06em}
+.btag{font-size:10px;color:rgba(255,255,255,.3);text-transform:uppercase;letter-spacing:.1em}
+.ns{padding:.625rem 1rem;position:relative;z-index:1;overflow-y:auto;flex:1}
+.nl{font-size:10px;text-transform:uppercase;letter-spacing:.12em;color:rgba(255,255,255,.22);margin-bottom:.4rem;padding:0 .25rem}
+.ni{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:8px;color:rgba(255,255,255,.5);font-size:13px;cursor:pointer;transition:.15s;margin-bottom:2px;border:1px solid transparent;user-select:none}
+.ni:hover{color:#fff;background:rgba(255,255,255,.06)}
+.ni.act{color:#fff;background:rgba(255,255,255,.1);border-color:rgba(162,174,157,.2)}
+.ni.act .nic{color:var(--sage-l)}
+.nic{width:15px;height:15px;flex-shrink:0;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.sb-foot{padding:.875rem 1.25rem;border-top:1px solid rgba(255,255,255,.07);position:relative;z-index:1}
+.ucard{display:flex;align-items:center;gap:10px;padding:8px;border-radius:8px;cursor:pointer;transition:.15s}
+.ucard:hover{background:rgba(255,255,255,.06)}
+.uav{width:32px;height:32px;border-radius:50%;background:var(--crimson);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:500;color:#fff;flex-shrink:0}
+.uname{font-size:12px;font-weight:500;color:#fff}
+.urole{font-size:11px;color:rgba(255,255,255,.32)}
+.logout-btn{margin-left:auto;background:none;border:none;cursor:pointer;color:rgba(255,255,255,.28);padding:4px;transition:.15s}
+.logout-btn:hover{color:var(--crimson)}
+
+/* ── MAIN ── */
+.main{flex:1;overflow-y:auto;display:flex;flex-direction:column}
+.topbar{background:#fff;border-bottom:1px solid var(--border);padding:.75rem 1.5rem;display:flex;align-items:center;gap:1rem;position:sticky;top:0;z-index:10}
+.tb-title{font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:400;color:var(--navy);flex:1}
+.btn{display:inline-flex;align-items:center;gap:6px;padding:8px 16px;border-radius:8px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;cursor:pointer;border:none;transition:.15s}
+.btn-primary{background:var(--navy);color:#fff}
+.btn-primary:hover{background:var(--navy-l)}
+.btn-danger{background:var(--crimson-l);color:var(--crimson);border:1px solid rgba(155,19,19,.2)}
+.btn-danger:hover{background:rgba(155,19,19,.15)}
+.btn-ghost{background:transparent;border:1px solid var(--border);color:var(--muted)}
+.btn-ghost:hover{background:var(--bg);color:var(--text)}
+.btn-sm{padding:5px 12px;font-size:12px}
+.content{padding:1.5rem;flex:1}
+
+/* ── STATS ── */
+.stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:1.5rem}
+.stat-card{background:#fff;border:1px solid var(--border);border-radius:12px;padding:1rem 1.125rem;position:relative;overflow:hidden}
+.stat-card::after{content:'';position:absolute;top:0;left:0;width:3px;height:100%;border-radius:3px 0 0 3px}
+.stat-card.blue::after{background:var(--navy)}
+.stat-card.green::after{background:var(--green)}
+.stat-card.amber::after{background:var(--amber)}
+.stat-card.red::after{background:var(--crimson)}
+.stat-label{font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:var(--light);margin-bottom:4px}
+.stat-value{font-family:'Cormorant Garamond',serif;font-size:28px;font-weight:400;color:var(--navy);line-height:1.1}
+.stat-sub{font-size:11px;color:var(--muted);margin-top:3px}
+
+/* ── TABLE ── */
+.table-wrap{background:#fff;border:1px solid var(--border);border-radius:12px;overflow:hidden;margin-bottom:1.5rem}
+.table-toolbar{display:flex;align-items:center;gap:10px;padding:.75rem 1.125rem;border-bottom:1px solid var(--border)}
+.search-box{display:flex;align-items:center;gap:8px;flex:1;max-width:300px;background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:6px 12px}
+.search-box input{background:transparent;border:none;outline:none;font-family:'DM Sans',sans-serif;font-size:13px;color:var(--text);width:100%}
+.search-box input::placeholder{color:var(--light)}
+.filter-sel{background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:6px 12px;font-family:'DM Sans',sans-serif;font-size:13px;color:var(--muted);outline:none;cursor:pointer}
+table{width:100%;border-collapse:collapse}
+thead th{text-align:left;padding:10px 1.125rem;font-size:10px;font-weight:600;color:var(--light);text-transform:uppercase;letter-spacing:.07em;border-bottom:1px solid var(--border);background:#fafafa}
+tbody tr{transition:.15s}
+tbody tr:hover{background:#fafaf8}
+tbody td{padding:11px 1.125rem;border-bottom:1px solid var(--border);font-size:13px;vertical-align:middle}
+tbody tr:last-child td{border-bottom:none}
+.user-cell{display:flex;align-items:center;gap:10px}
+.av{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;flex-shrink:0}
+.av-a{background:var(--crimson-l);color:var(--crimson)}
+.av-b{background:var(--navy-bg);color:var(--navy)}
+.av-c{background:rgba(58,122,58,.1);color:var(--green)}
+.av-d{background:rgba(224,144,0,.1);color:var(--amber)}
+.av-e{background:rgba(162,174,157,.15);color:var(--sage-d)}
+.uinfo .un{font-weight:500;color:var(--text)}
+.uinfo .ue{font-family:'DM Mono',monospace;font-size:11px;color:var(--muted)}
+
+/* ── BADGES ── */
+.badge{font-size:10px;padding:2px 9px;border-radius:99px;font-weight:500;display:inline-flex;align-items:center;gap:4px}
+.b-active{background:rgba(58,122,58,.1);color:var(--green);border:1px solid rgba(58,122,58,.2)}
+.b-inactive{background:rgba(0,0,0,.05);color:var(--muted);border:1px solid var(--border)}
+.b-admin{background:var(--crimson-l);color:var(--crimson);border:1px solid rgba(155,19,19,.15)}
+.b-rm{background:var(--navy-bg);color:var(--navy);border:1px solid rgba(39,39,87,.15)}
+.b-supervisor{background:rgba(162,174,157,.15);color:var(--sage-d);border:1px solid rgba(162,174,157,.3)}
+.bdot{width:5px;height:5px;border-radius:50%;background:currentColor}
+
+/* ── MODAL ── */
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:100;display:none;align-items:center;justify-content:center}
+.overlay.show{display:flex}
+.modal{background:#fff;border-radius:16px;width:480px;max-height:85vh;overflow-y:auto;animation:mup .2s ease}
+@keyframes mup{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+.modal-hd{padding:1.25rem 1.5rem;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.modal-title{font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:400;color:var(--navy)}
+.modal-close{background:none;border:none;cursor:pointer;color:var(--muted);font-size:18px;padding:4px;transition:.15s;line-height:1}
+.modal-close:hover{color:var(--crimson)}
+.modal-body{padding:1.25rem 1.5rem}
+.form-group{margin-bottom:1rem}
+.form-label{display:block;font-size:11px;font-weight:500;text-transform:uppercase;letter-spacing:.07em;color:var(--navy);margin-bottom:5px}
+.form-input,.form-select{width:100%;padding:9px 12px;border:1px solid var(--border);border-radius:8px;font-family:'DM Sans',sans-serif;font-size:13px;color:var(--text);outline:none;background:#fff;transition:.2s}
+.form-input:focus,.form-select:focus{border-color:var(--sage);box-shadow:0 0 0 3px rgba(162,174,157,.12)}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.modal-foot{padding:.875rem 1.5rem;border-top:1px solid var(--border);display:flex;justify-content:flex-end;gap:8px}
+
+/* ── ROLE CARDS ── */
+.role-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:1.5rem}
+.role-card{background:#fff;border:1px solid var(--border);border-radius:12px;padding:1.125rem;position:relative;overflow:hidden;cursor:pointer;transition:.15s}
+.role-card:hover{border-color:var(--sage);box-shadow:0 2px 10px rgba(39,39,87,.06)}
+.role-stripe{position:absolute;top:0;left:0;bottom:0;width:3px}
+.role-name{font-size:14px;font-weight:500;color:var(--navy);margin-bottom:4px}
+.role-desc{font-size:12px;color:var(--muted);margin-bottom:.75rem}
+.perm-list{display:flex;flex-wrap:wrap;gap:4px}
+.perm-tag{font-size:10px;padding:2px 7px;border-radius:4px;background:var(--bg);border:1px solid var(--border);color:var(--muted)}
+
+/* ── AUDIT ── */
+.audit-row{display:flex;align-items:center;gap:12px;padding:.875rem 1.125rem;border-bottom:1px solid var(--border)}
+.audit-row:last-child{border-bottom:none}
+.audit-action{font-size:10px;padding:2px 8px;border-radius:4px;font-weight:600;font-family:'DM Mono',monospace;min-width:60px;text-align:center}
+.a-LOGIN{background:rgba(58,122,58,.1);color:var(--green)}
+.a-LOGOUT{background:rgba(0,0,0,.05);color:var(--muted)}
+.a-CREATE{background:var(--navy-bg);color:var(--navy)}
+.a-UPDATE{background:rgba(224,144,0,.1);color:var(--amber)}
+.a-DELETE{background:var(--crimson-l);color:var(--crimson)}
+.a-EXPORT{background:rgba(162,174,157,.15);color:var(--sage-d)}
+.a-ACCESS{background:var(--navy-bg);color:var(--navy-l)}
+
+/* ── NBA RULES ── */
+.rule-card{background:#fff;border:1px solid var(--border);border-radius:10px;padding:1rem 1.125rem;margin-bottom:10px;display:flex;align-items:flex-start;gap:12px}
+.rule-card:last-child{margin-bottom:0}
+.rule-drag{color:var(--light);cursor:grab;font-size:16px;padding-top:2px;user-select:none}
+.rule-body{flex:1}
+.rule-name{font-size:13px;font-weight:500;color:var(--navy);margin-bottom:3px}
+.rule-cond{font-size:12px;color:var(--muted)}
+.rule-score{font-family:'Cormorant Garamond',serif;font-size:22px;color:var(--navy);margin-left:auto;flex-shrink:0}
+.rule-toggle{width:34px;height:18px;border-radius:9px;border:none;cursor:pointer;transition:.2s;position:relative;flex-shrink:0}
+.rule-toggle.on{background:var(--navy)}
+.rule-toggle.off{background:var(--border)}
+.rule-toggle::after{content:'';position:absolute;width:12px;height:12px;border-radius:50%;background:#fff;top:3px;transition:.2s}
+.rule-toggle.on::after{right:3px}
+.rule-toggle.off::after{left:3px}
+
+/* ── TOAST ── */
+.toast{position:fixed;bottom:22px;right:22px;background:var(--navy-d);color:#fff;padding:11px 18px;border-radius:10px;font-size:13px;box-shadow:0 4px 20px rgba(0,0,0,.2);opacity:0;transform:translateY(8px);transition:.3s;pointer-events:none;z-index:999;max-width:300px;line-height:1.4}
+.toast.show{opacity:1;transform:translateY(0)}
+.toast.ok{border-left:3px solid var(--sage)}
+.toast.err{border-left:3px solid var(--crimson)}
+
+/* ── CONFIRM ── */
+.confirm-overlay{position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:200;display:none;align-items:center;justify-content:center}
+.confirm-overlay.show{display:flex}
+.confirm-box{background:#fff;border-radius:12px;width:360px;padding:1.5rem}
+.confirm-title{font-size:16px;font-weight:500;color:var(--text);margin-bottom:.5rem}
+.confirm-msg{font-size:13px;color:var(--muted);margin-bottom:1.25rem;line-height:1.5}
+.confirm-actions{display:flex;justify-content:flex-end;gap:8px}
+
+/* ── JWT ── */
+.jwt-box{background:var(--navy-d);border-radius:8px;padding:.875rem;font-family:'DM Mono',monospace;font-size:11px;color:var(--sage-l);word-break:break-all;line-height:1.6;max-height:120px;overflow-y:auto;margin-top:.5rem}
+
+
+/* ── ANIMATED BLOBS ── */
+#blob-canvas{position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:-1;opacity:0.35;}
+
+.main::-webkit-scrollbar{width:5px}.main::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
+@media(max-width:900px){.stats-grid{grid-template-columns:1fr 1fr}.role-grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<canvas id="blob-canvas"></canvas>
+
+<div class="app">
+
+<!-- SIDEBAR -->
+<nav class="sb">
+  <div class="sb-brand">
+    <div class="lmk"></div>
+    <div>
+      <div class="bname">Veridian</div>
+      <div class="btag">Admin Console</div>
+    </div>
+  </div>
+  <div class="ns">
+    <div class="nl">Administration</div>
+    <div class="ni act" data-view="overview">
+      <svg class="nic" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>Overview
+    </div>
+    <div class="ni" data-view="users">
+      <svg class="nic" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>User Management
+    </div>
+    <div class="ni" data-view="roles">
+      <svg class="nic" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>Roles & RBAC
+    </div>
+    <div class="ni" data-view="nba">
+      <svg class="nic" viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>NBA Rule Editor
+    </div>
+    <div class="ni" data-view="audit">
+      <svg class="nic" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/></svg>Audit Log
+    </div>
+    <div class="ni" data-view="jwt">
+      <svg class="nic" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>JWT / Auth
+    </div>
+    <div class="nl" style="margin-top:.75rem">Navigation</div>
+    <div class="ni" id="backToDash">
+      <svg class="nic" viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>Back to Dashboard
+    </div>
+  </div>
+  <div class="sb-foot">
+    <div class="ucard">
+      <div class="uav" id="uav">AS</div>
+      <div><div class="uname" id="unameEl">Admin</div><div class="urole">Administrator</div></div>
+      <button class="logout-btn" id="logoutBtn">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+      </button>
+    </div>
+  </div>
+</nav>
+
+<!-- MAIN -->
+<div class="main">
+  <header class="topbar">
+    <div class="tb-title" id="pageTitle">Admin Overview</div>
+    <div id="topbarActions"></div>
+  </header>
+  <div class="content" id="contentEl"></div>
+</div>
+</div>
+
+<!-- USER MODAL -->
+<div class="overlay" id="userModal">
+  <div class="modal">
+    <div class="modal-hd">
+      <div class="modal-title" id="userModalTitle">Add User</div>
+      <button class="modal-close" id="userModalClose">&times;</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="editUserId"/>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Full Name</label>
+          <input class="form-input" id="uName" placeholder="e.g. Priya Sharma"/>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Employee ID</label>
+          <input class="form-input" id="uEmpId" placeholder="EMP-2025-XXX"/>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Email</label>
+        <input class="form-input" id="uEmail" type="email" placeholder="user@veridian.in"/>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Password</label>
+          <input class="form-input" id="uPass" type="text" placeholder="Min 8 chars"/>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Role</label>
+          <select class="form-select" id="uRole">
+            <option value="rm">Relationship Manager</option>
+            <option value="supervisor">Supervisor</option>
+            <option value="admin">Administrator</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Segment</label>
+          <select class="form-select" id="uSegment">
+            <option>Retail</option><option>HNI</option><option>SME</option><option>Premium</option><option>All</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Status</label>
+          <select class="form-select" id="uStatus">
+            <option value="active">Active</option>
+            <option value="inactive">Inactive</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Branch</label>
+        <input class="form-input" id="uBranch" placeholder="e.g. Jubilee Hills, Hyderabad"/>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-ghost" id="userModalCancel">Cancel</button>
+      <button class="btn btn-primary" id="userModalSave">Save User</button>
+    </div>
+  </div>
+</div>
+
+<!-- CONFIRM DIALOG -->
+<div class="confirm-overlay" id="confirmOverlay">
+  <div class="confirm-box">
+    <div class="confirm-title" id="confirmTitle">Confirm Action</div>
+    <div class="confirm-msg" id="confirmMsg">Are you sure?</div>
+    <div class="confirm-actions">
+      <button class="btn btn-ghost btn-sm" id="confirmCancel">Cancel</button>
+      <button class="btn btn-danger btn-sm" id="confirmOk">Confirm</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toastEl"></div>
+
+<script>
+// ─── DB & SESSION ────────────────────────────────────────
+const DB_KEY='v360_db', SESSION_KEY='v360_session', TTL=7*24*60*60*1000;
+function getDB(){try{const d=JSON.parse(localStorage.getItem(DB_KEY));if(d&&d.expiry&&Date.now()<d.expiry)return d;}catch(e){}return null;}
+function saveDB(db){db.expiry=Date.now()+TTL;localStorage.setItem(DB_KEY,JSON.stringify(db));}
+
+let session;
+try{
+  session=JSON.parse(localStorage.getItem(SESSION_KEY));
+  if(!session||!session.expiry||Date.now()>=session.expiry)throw new Error();
+  if(session.role!=='admin'){window.location.href='dashboard.html';throw new Error('Not admin');}
+}catch(e){if(e.message!=='Not admin')window.location.href='index.html';}
+
+document.getElementById('uav').textContent=session?.initials||'AS';
+document.getElementById('unameEl').textContent=session?.name||'Admin';
+
+// ─── SEED USERS INTO DB ──────────────────────────────────
+function ensureUsers(){
+  const db=getDB()||{};
+  if(!db.rmUsers){
+    db.rmUsers=[
+      {id:'u1',name:'Fathima Qhibtiya',email:'fathima@veridian.in',password:'RM@2025',role:'rm',initials:'FQ',segment:'Retail',branch:'Banjara Hills',status:'active',empId:'EMP-2025-001',createdAt:'2025-01-10'},
+      {id:'u2',name:'Datla Mahija',email:'mahija@veridian.in',password:'RM@2025',role:'rm',initials:'DM',segment:'HNI',branch:'Jubilee Hills',status:'active',empId:'EMP-2025-002',createdAt:'2025-01-10'},
+      {id:'u3',name:'Admin Sharma',email:'admin@veridian.in',password:'Admin@360',role:'admin',initials:'AS',segment:'All',branch:'Head Office',status:'active',empId:'EMP-2025-003',createdAt:'2025-01-01'},
+      {id:'u4',name:'Ravi Kumar',email:'ravi@veridian.in',password:'RM@2025',role:'rm',initials:'RK',segment:'SME',branch:'Secunderabad',status:'active',empId:'EMP-2025-004',createdAt:'2025-02-15'},
+      {id:'u5',name:'Priya Nair',email:'priya@veridian.in',password:'RM@2025',role:'supervisor',initials:'PN',segment:'Premium',branch:'Madhapur',status:'active',empId:'EMP-2025-005',createdAt:'2025-03-01'},
+    ];
+    saveDB(db);
+  }
+  return db;
+}
+
+const PERMISSIONS={
+  rm:['customers:read','products:read','interactions:read','interactions:write','notes:write','service:read','service:write','nba:read','export:pdf'],
+  supervisor:['customers:read','products:read','interactions:read','interactions:write','notes:write','service:read','service:write','service:escalate','nba:read','nba:present','export:pdf','export:excel','reports:read'],
+  admin:['customers:read','customers:write','products:read','products:write','interactions:read','interactions:write','notes:write','service:read','service:write','service:escalate','nba:read','nba:configure','export:pdf','export:excel','reports:read','reports:admin','users:read','users:write','audit:read','settings:admin']
+};
+
+const NBA_RULES_SEED=[
+  {id:'r1',name:'FD Maturity Cross-sell',condition:'FD matures ≤ 30 days AND no active loan',action:'Offer Home Loan Top-up',score:95,status:'active'},
+  {id:'r2',name:'Wealth Upgrade Trigger',condition:'AUM > ₹40L AND no premium plan',action:'Upgrade to Premier Wealth Account',score:81,status:'active'},
+  {id:'r3',name:'Travel Insurance Push',condition:'≥3 intl transactions in 90 days AND no insurance',action:'Cross-sell Travel Insurance',score:74,status:'active'},
+  {id:'r4',name:'SIP Increase Nudge',condition:'Salary > ₹1L AND SIP < 10% of income',action:'Suggest SIP top-up',score:68,status:'active'},
+  {id:'r5',name:'Credit Card Upgrade',condition:'Monthly spend > ₹50k AND standard card',action:'Upgrade to Signature card',score:62,status:'draft'},
+  {id:'r6',name:'Recurring Deposit',condition:'Avg monthly balance > ₹2L AND no RD',action:'Open Recurring Deposit',score:55,status:'draft'},
+];
+
+function getNBARules(){const db=getDB()||{};return db.nbaRules||NBA_RULES_SEED;}
+function saveNBARule(rules){const db=getDB()||{};db.nbaRules=rules;saveDB(db);}
+function getAudit(){const db=getDB()||{};return db.audit||[];}
+function addAudit(action,detail){
+  const db=getDB()||{};
+  if(!db.audit)db.audit=[];
+  db.audit.unshift({id:'a'+Date.now(),uid:session?.uid,name:session?.name,action,detail,ts:new Date().toLocaleString()});
+  if(db.audit.length>100)db.audit=db.audit.slice(0,100);
+  saveDB(db);
+}
+
+// ─── STATE ───────────────────────────────────────────────
+let currentView='overview', toastTmr, confirmCallback=null;
+let userSearch='', userRoleFilter='', userStatusFilter='';
+
+// ─── NAV ─────────────────────────────────────────────────
+document.querySelectorAll('.ni[data-view]').forEach(n=>{
+  n.addEventListener('click',()=>{
+    const v=n.dataset.view;
+    document.querySelectorAll('.ni').forEach(x=>x.classList.remove('act'));
+    n.classList.add('act');
+    currentView=v; render();
+  });
+});
+document.getElementById('backToDash').addEventListener('click',()=>window.location.href='dashboard.html');
+document.getElementById('logoutBtn').addEventListener('click',()=>{
+  localStorage.removeItem(SESSION_KEY);
+  window.location.href='index.html';
+});
+
+// ─── RENDER ──────────────────────────────────────────────
+function render(){
+  const titles={overview:'Admin Overview',users:'User Management',roles:'Roles & RBAC',nba:'NBA Rule Editor',audit:'Audit Log',jwt:'JWT / Authentication'};
+  document.getElementById('pageTitle').textContent=titles[currentView]||'Admin';
+  const content=document.getElementById('contentEl');
+  const topbar=document.getElementById('topbarActions');
+  topbar.innerHTML='';
+  if(currentView==='overview') content.innerHTML=renderOverview();
+  else if(currentView==='users'){
+    topbar.innerHTML=`<button class="btn btn-primary" id="addUserBtn"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> Add User</button>`;
+    content.innerHTML=renderUsers();
+    document.getElementById('addUserBtn').addEventListener('click',()=>openUserModal(null));
+  }
+  else if(currentView==='roles') content.innerHTML=renderRoles();
+  else if(currentView==='nba'){
+    topbar.innerHTML=`<button class="btn btn-primary" id="addRuleBtn"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> Add Rule</button>`;
+    content.innerHTML=renderNBA();
+    document.getElementById('addRuleBtn').addEventListener('click',addNBARule);
+  }
+  else if(currentView==='audit') content.innerHTML=renderAudit();
+  else if(currentView==='jwt') content.innerHTML=renderJWT();
+  attachTableEvents();
+}
+
+// ─── OVERVIEW ────────────────────────────────────────────
+function renderOverview(){
+  const db=ensureUsers();
+  const users=db.rmUsers||[];
+  const active=users.filter(u=>u.status==='active').length;
+  const audit=getAudit();
+  const nba=getNBARules();
+  const srs=(db.serviceRequests||[]).filter(s=>s.status!=='Resolved').length;
+  return `
+  <div class="stats-grid">
+    <div class="stat-card blue"><div class="stat-label">Total Users</div><div class="stat-value">${users.length}</div><div class="stat-sub">${active} active · ${users.length-active} inactive</div></div>
+    <div class="stat-card green"><div class="stat-label">Active RM Users</div><div class="stat-value">${users.filter(u=>u.role==='rm'&&u.status==='active').length}</div><div class="stat-sub">Across ${[...new Set(users.map(u=>u.branch))].length} branches</div></div>
+    <div class="stat-card amber"><div class="stat-label">NBA Rules</div><div class="stat-value">${nba.filter(r=>r.status==='active').length}</div><div class="stat-sub">${nba.filter(r=>r.status==='draft').length} in draft</div></div>
+    <div class="stat-card red"><div class="stat-label">Audit Events</div><div class="stat-value">${audit.length}</div><div class="stat-sub">Last 7 days</div></div>
+  </div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+    <div class="table-wrap" style="margin-bottom:0">
+      <div style="padding:.875rem 1.125rem;border-bottom:1px solid var(--border);font-size:11px;font-weight:500;text-transform:uppercase;letter-spacing:.07em;color:var(--navy)">Role Distribution</div>
+      ${['admin','supervisor','rm'].map(r=>{
+        const cnt=users.filter(u=>u.role===r).length;
+        const pct=users.length?Math.round(cnt/users.length*100):0;
+        const colors={admin:'var(--crimson)',supervisor:'var(--amber)',rm:'var(--navy)'};
+        const labels={admin:'Administrator',supervisor:'Supervisor',rm:'Relationship Manager'};
+        return `<div style="display:flex;align-items:center;gap:12px;padding:.875rem 1.125rem;border-bottom:1px solid var(--border)">
+          <div style="width:8px;height:8px;border-radius:50%;background:${colors[r]}"></div>
+          <div style="flex:1;font-size:13px">${labels[r]}</div>
+          <div style="font-size:12px;color:var(--muted)">${cnt} user${cnt!==1?'s':''}</div>
+          <div style="width:80px;height:4px;background:var(--border);border-radius:2px"><div style="width:${pct}%;height:100%;background:${colors[r]};border-radius:2px"></div></div>
+        </div>`;
+      }).join('')}
+    </div>
+    <div class="table-wrap" style="margin-bottom:0">
+      <div style="padding:.875rem 1.125rem;border-bottom:1px solid var(--border);font-size:11px;font-weight:500;text-transform:uppercase;letter-spacing:.07em;color:var(--navy)">Recent Audit Events</div>
+      ${audit.slice(0,6).map(a=>`
+      <div class="audit-row">
+        <span class="audit-action a-${a.action}">${a.action}</span>
+        <div style="flex:1;font-size:12.5px"><div style="font-weight:500;color:var(--text)">${a.detail||'—'}</div><div style="font-size:11px;color:var(--muted)">${a.name||a.uid} · ${a.ts}</div></div>
+      </div>`).join('')||`<div style="padding:2rem;text-align:center;color:var(--muted);font-size:13px">No audit events yet.</div>`}
+    </div>
+  </div>`;
+}
+
+// ─── USERS ────────────────────────────────────────────────
+function renderUsers(){
+  const db=ensureUsers();
+  let users=db.rmUsers||[];
+  if(userSearch) users=users.filter(u=>u.name.toLowerCase().includes(userSearch.toLowerCase())||u.email.toLowerCase().includes(userSearch.toLowerCase()));
+  if(userRoleFilter) users=users.filter(u=>u.role===userRoleFilter);
+  if(userStatusFilter) users=users.filter(u=>u.status===userStatusFilter);
+  const avCls=['av-a','av-b','av-c','av-d','av-e'];
+  const roleBadge={rm:'b-rm',supervisor:'b-supervisor',admin:'b-admin'};
+  const roleLabel={rm:'RM',supervisor:'Supervisor',admin:'Admin'};
+  return `
+  <div class="table-wrap" style="margin-bottom:0">
+    <div class="table-toolbar">
+      <div class="search-box">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input id="userSearch" placeholder="Search name or email…" value="${userSearch}"/>
+      </div>
+      <select class="filter-sel" id="roleFilter">
+        <option value="">All roles</option><option value="rm" ${userRoleFilter==='rm'?'selected':''}>RM</option>
+        <option value="supervisor" ${userRoleFilter==='supervisor'?'selected':''}>Supervisor</option>
+        <option value="admin" ${userRoleFilter==='admin'?'selected':''}>Admin</option>
+      </select>
+      <select class="filter-sel" id="statusFilter">
+        <option value="">All status</option><option value="active" ${userStatusFilter==='active'?'selected':''}>Active</option>
+        <option value="inactive" ${userStatusFilter==='inactive'?'selected':''}>Inactive</option>
+      </select>
+      <div style="margin-left:auto;font-size:12px;color:var(--muted)">${users.length} user${users.length!==1?'s':''}</div>
+    </div>
+    <table>
+      <thead><tr><th>User</th><th>Employee ID</th><th>Role</th><th>Segment</th><th>Branch</th><th>Status</th><th>Actions</th></tr></thead>
+      <tbody>
+        ${users.length?users.map((u,i)=>`<tr>
+          <td><div class="user-cell"><div class="av ${avCls[i%avCls.length]}">${u.initials||u.name.split(' ').map(x=>x[0]).join('').slice(0,2)}</div><div class="uinfo"><div class="un">${u.name}</div><div class="ue">${u.email}</div></div></div></td>
+          <td style="font-family:'DM Mono',monospace;font-size:12px;color:var(--muted)">${u.empId||'—'}</td>
+          <td><span class="badge ${roleBadge[u.role]||'b-rm'}">${roleLabel[u.role]||u.role}</span></td>
+          <td style="font-size:12px;color:var(--muted)">${u.segment||'—'}</td>
+          <td style="font-size:12px;color:var(--muted)">${u.branch||'—'}</td>
+          <td><span class="badge ${u.status==='active'?'b-active':'b-inactive'}"><span class="bdot"></span>${u.status}</span></td>
+          <td><div style="display:flex;gap:6px">
+            <button class="btn btn-ghost btn-sm edit-user" data-id="${u.id}">Edit</button>
+            <button class="btn btn-danger btn-sm toggle-user" data-id="${u.id}" data-status="${u.status}">${u.status==='active'?'Deactivate':'Activate'}</button>
+          </div></td>
+        </tr>`).join(''):`<tr><td colspan="7" style="text-align:center;padding:2rem;color:var(--muted)">No users found.</td></tr>`}
+      </tbody>
+    </table>
+  </div>`;
+}
+
+function attachTableEvents(){
+  document.getElementById('userSearch')?.addEventListener('input',function(){userSearch=this.value;render();});
+  document.getElementById('roleFilter')?.addEventListener('change',function(){userRoleFilter=this.value;render();});
+  document.getElementById('statusFilter')?.addEventListener('change',function(){userStatusFilter=this.value;render();});
+  document.querySelectorAll('.edit-user').forEach(btn=>btn.addEventListener('click',()=>openUserModal(btn.dataset.id)));
+  document.querySelectorAll('.toggle-user').forEach(btn=>btn.addEventListener('click',()=>{
+    const id=btn.dataset.id, st=btn.dataset.status;
+    confirm2(`${st==='active'?'Deactivate':'Activate'} User`,`Are you sure you want to ${st==='active'?'deactivate':'activate'} this user?`,()=>{
+      const db=ensureUsers();
+      const u=db.rmUsers.find(x=>x.id===id);
+      if(u){u.status=st==='active'?'inactive':'active';saveDB(db);addAudit('UPDATE',`${session.name} ${u.status==='active'?'activated':'deactivated'} user ${u.name}`);toast(`User ${u.status}.`,'ok');render();}
+    });
+  }));
+  document.querySelectorAll('.toggle-nba').forEach(btn=>btn.addEventListener('click',function(){
+    const id=this.dataset.id;
+    const rules=getNBARules();
+    const r=rules.find(x=>x.id===id);
+    if(r){r.status=r.status==='active'?'draft':'active';saveNBARule(rules);addAudit('UPDATE',`NBA rule "${r.name}" set to ${r.status}`);toast(`Rule ${r.status}.`,'ok');render();}
+  }));
+  document.querySelectorAll('.delete-nba').forEach(btn=>btn.addEventListener('click',function(){
+    const id=this.dataset.id;
+    confirm2('Delete NBA Rule','This rule will be permanently removed.',()=>{
+      const rules=getNBARules().filter(x=>x.id!==id);
+      saveNBARule(rules);addAudit('DELETE','NBA rule deleted');toast('Rule deleted.','ok');render();
+    });
+  }));
+}
+
+// ─── USER MODAL ──────────────────────────────────────────
+function openUserModal(id){
+  const db=ensureUsers();
+  const u=id?db.rmUsers.find(x=>x.id===id):null;
+  document.getElementById('userModalTitle').textContent=u?'Edit User':'Add User';
+  document.getElementById('editUserId').value=u?u.id:'';
+  document.getElementById('uName').value=u?u.name:'';
+  document.getElementById('uEmail').value=u?u.email:'';
+  document.getElementById('uPass').value=u?u.password:'';
+  document.getElementById('uRole').value=u?u.role:'rm';
+  document.getElementById('uSegment').value=u?u.segment:'Retail';
+  document.getElementById('uStatus').value=u?u.status:'active';
+  document.getElementById('uBranch').value=u?u.branch:'';
+  document.getElementById('uEmpId').value=u?u.empId:'';
+  document.getElementById('userModal').classList.add('show');
+}
+document.getElementById('userModalClose').addEventListener('click',()=>document.getElementById('userModal').classList.remove('show'));
+document.getElementById('userModalCancel').addEventListener('click',()=>document.getElementById('userModal').classList.remove('show'));
+document.getElementById('userModal').addEventListener('click',function(e){if(e.target===this)this.classList.remove('show');});
+document.getElementById('userModalSave').addEventListener('click',()=>{
+  const name=document.getElementById('uName').value.trim();
+  const email=document.getElementById('uEmail').value.trim();
+  const pass=document.getElementById('uPass').value.trim();
+  const role=document.getElementById('uRole').value;
+  if(!name||!email||!pass){toast('Please fill in all required fields.','err');return;}
+  const db=ensureUsers();
+  const editId=document.getElementById('editUserId').value;
+  if(editId){
+    const u=db.rmUsers.find(x=>x.id===editId);
+    if(u){
+      u.name=name;u.email=email;u.password=pass;u.role=role;
+      u.segment=document.getElementById('uSegment').value;
+      u.status=document.getElementById('uStatus').value;
+      u.branch=document.getElementById('uBranch').value;
+      u.empId=document.getElementById('uEmpId').value;
+      u.initials=name.split(' ').map(x=>x[0]).join('').slice(0,2).toUpperCase();
+      saveDB(db);addAudit('UPDATE',`${session.name} updated user ${name}`);toast(`User ${name} updated.`,'ok');
+    }
+  } else {
+    const newUser={id:'u'+Date.now(),name,email,password:pass,role,initials:name.split(' ').map(x=>x[0]).join('').slice(0,2).toUpperCase(),segment:document.getElementById('uSegment').value,branch:document.getElementById('uBranch').value,empId:document.getElementById('uEmpId').value||'EMP-'+Date.now().toString().slice(-6),status:document.getElementById('uStatus').value,createdAt:new Date().toISOString().split('T')[0]};
+    db.rmUsers.push(newUser);saveDB(db);addAudit('CREATE',`${session.name} created user ${name}`);toast(`User ${name} created.`,'ok');
+  }
+  document.getElementById('userModal').classList.remove('show');render();
+});
+
+// ─── ROLES ────────────────────────────────────────────────
+function renderRoles(){
+  const roles=[
+    {name:'Administrator',color:'var(--crimson)',desc:'Full system access. User management, NBA config, audit, all customer data.',perms:PERMISSIONS.admin},
+    {name:'Supervisor',color:'var(--amber)',desc:'Team oversight. Can escalate SR, run reports, export Excel, present NBA.',perms:PERMISSIONS.supervisor},
+    {name:'Relationship Manager',color:'var(--navy)',desc:'Day-to-day RM work. Customer view, notes, service requests, NBA read.',perms:PERMISSIONS.rm},
+  ];
+  return `
+  <div class="role-grid">
+    ${roles.map(r=>`
+    <div class="role-card">
+      <div class="role-stripe" style="background:${r.color}"></div>
+      <div style="padding-left:12px">
+        <div class="role-name">${r.name}</div>
+        <div class="role-desc">${r.desc}</div>
+        <div class="perm-list">${r.perms.map(p=>`<span class="perm-tag">${p}</span>`).join('')}</div>
+      </div>
+    </div>`).join('')}
+    <div class="role-card" style="border-style:dashed;display:flex;align-items:center;justify-content:center;min-height:120px;color:var(--muted);font-size:13px;cursor:default">
+      <div style="text-align:center"><div style="font-size:22px;margin-bottom:6px">+</div>Custom roles available in Enterprise</div>
+    </div>
+  </div>
+  <div class="table-wrap" style="margin-bottom:0">
+    <div style="padding:.875rem 1.125rem;border-bottom:1px solid var(--border)">
+      <div style="font-size:11px;font-weight:500;text-transform:uppercase;letter-spacing:.07em;color:var(--navy);margin-bottom:4px">Permission Matrix</div>
+      <div style="font-size:12px;color:var(--muted)">JWT payload contains role field. All API routes check role before granting access.</div>
+    </div>
+    <div style="overflow-x:auto">
+    <table>
+      <thead><tr><th>Permission</th><th>RM</th><th>Supervisor</th><th>Admin</th></tr></thead>
+      <tbody>
+        ${['customers:read','customers:write','products:read','interactions:write','notes:write','service:write','service:escalate','nba:read','nba:configure','export:pdf','export:excel','reports:admin','users:write','audit:read','settings:admin'].map(p=>`<tr>
+          <td style="font-family:'DM Mono',monospace;font-size:12px">${p}</td>
+          <td style="text-align:center">${PERMISSIONS.rm.includes(p)?'<span style="color:var(--green)">✓</span>':'<span style="color:var(--border)">—</span>'}</td>
+          <td style="text-align:center">${PERMISSIONS.supervisor.includes(p)?'<span style="color:var(--amber)">✓</span>':'<span style="color:var(--border)">—</span>'}</td>
+          <td style="text-align:center">${PERMISSIONS.admin.includes(p)?'<span style="color:var(--crimson)">✓</span>':'<span style="color:var(--border)">—</span>'}</td>
+        </tr>`).join('')}
+      </tbody>
+    </table>
+    </div>
+  </div>`;
+}
+
+// ─── NBA EDITOR ───────────────────────────────────────────
+function renderNBA(){
+  const rules=getNBARules();
+  return `
+  <div style="margin-bottom:14px;font-size:13px;color:var(--muted)">Configure the rule engine that powers Next Best Action recommendations. Rules are evaluated in score order.</div>
+  <div id="rulesList">
+    ${rules.map(r=>`
+    <div class="rule-card" data-id="${r.id}">
+      <div class="rule-drag">⠿</div>
+      <div class="rule-body">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:3px">
+          <div class="rule-name">${r.name}</div>
+          <span style="font-size:10px;padding:2px 7px;border-radius:4px;background:${r.status==='active'?'rgba(58,122,58,.1)':'rgba(0,0,0,.05)'};color:${r.status==='active'?'var(--green)':'var(--muted)'}">${r.status}</span>
+        </div>
+        <div class="rule-cond"><strong>If:</strong> ${r.condition}</div>
+        <div class="rule-cond"><strong>Then:</strong> ${r.action}</div>
+      </div>
+      <div class="rule-score">${r.score}</div>
+      <button class="rule-toggle ${r.status==='active'?'on':'off'} toggle-nba" data-id="${r.id}" title="${r.status==='active'?'Deactivate':'Activate'}"></button>
+      <button class="btn btn-danger btn-sm delete-nba" data-id="${r.id}">✕</button>
+    </div>`).join('')}
+  </div>`;
+}
+
+function addNBARule(){
+  const name=prompt('Rule name:');if(!name)return;
+  const condition=prompt('Condition (e.g. AUM > ₹10L AND no loan):');if(!condition)return;
+  const action=prompt('Recommended action:');if(!action)return;
+  const score=parseInt(prompt('Score (1-100):')||'50');
+  const rules=getNBARules();
+  rules.push({id:'r'+Date.now(),name,condition,action,score:isNaN(score)?50:Math.min(100,Math.max(1,score)),status:'draft'});
+  rules.sort((a,b)=>b.score-a.score);
+  saveNBARule(rules);addAudit('CREATE',`NBA rule "${name}" created`);toast('Rule added.','ok');render();
+}
+
+// ─── AUDIT ────────────────────────────────────────────────
+function renderAudit(){
+  const audit=getAudit();
+  addAudit('ACCESS',`${session.name} viewed audit log`);
+  return `
+  <div class="table-wrap" style="margin-bottom:0">
+    <div class="table-toolbar">
+      <div style="font-size:13px;color:var(--muted)">${audit.length} total events · last ${Math.min(audit.length,50)} shown</div>
+      <button class="btn btn-ghost btn-sm" style="margin-left:auto" onclick="clearAudit()">Clear Log</button>
+    </div>
+    <table>
+      <thead><tr><th>Action</th><th>Detail</th><th>User</th><th>Timestamp</th></tr></thead>
+      <tbody>
+        ${audit.slice(0,50).map(a=>`<tr>
+          <td><span class="audit-action a-${a.action}">${a.action}</span></td>
+          <td style="font-size:12.5px">${a.detail||'—'}</td>
+          <td style="font-size:12px;color:var(--muted)">${a.name||a.uid||'System'}</td>
+          <td style="font-family:'DM Mono',monospace;font-size:11px;color:var(--muted)">${a.ts}</td>
+        </tr>`).join('')||`<tr><td colspan="4" style="text-align:center;padding:2rem;color:var(--muted)">No audit events recorded.</td></tr>`}
+      </tbody>
+    </table>
+  </div>`;
+}
+
+window.clearAudit=function(){
+  confirm2('Clear Audit Log','All audit records will be permanently deleted.',()=>{
+    const db=getDB()||{};db.audit=[];saveDB(db);toast('Audit log cleared.','ok');render();
+  });
+};
+
+// ─── JWT ──────────────────────────────────────────────────
+function renderJWT(){
+  function b64(obj){return btoa(JSON.stringify(obj)).replace(/=/g,'').replace(/\+/g,'-').replace(/\//g,'_');}
+  const header=b64({alg:'HS256',typ:'JWT'});
+  const payload=b64({sub:session?.uid,name:session?.name,email:session?.email,role:session?.role,permissions:PERMISSIONS[session?.role]||[],iat:Math.floor(Date.now()/1000),exp:Math.floor(Date.now()/1000)+604800,iss:'veridian-bank-360'});
+  const sig=b64({sig:'HMAC-SHA256-signature-would-be-here'});
+  const token=`${header}.${payload}.${sig}`;
+  return `
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:1.5rem">
+    <div class="table-wrap" style="margin-bottom:0">
+      <div style="padding:.875rem 1.125rem;border-bottom:1px solid var(--border);font-size:11px;font-weight:500;text-transform:uppercase;letter-spacing:.07em;color:var(--navy)">Current Session Token</div>
+      <div style="padding:1rem 1.125rem">
+        <div style="font-size:12px;color:var(--muted);margin-bottom:.5rem">JWT (simulated) — expires in 7 days from login</div>
+        <div class="jwt-box">${token}</div>
+        <div style="margin-top:.875rem;font-size:12px;color:var(--muted)">
+          <div><strong style="color:var(--navy)">Header:</strong> HS256 algorithm, JWT type</div>
+          <div><strong style="color:var(--navy)">Payload:</strong> user ID, role, permissions, iat/exp</div>
+          <div><strong style="color:var(--navy)">Signature:</strong> HMAC-SHA256 with server secret</div>
+        </div>
+      </div>
+    </div>
+    <div class="table-wrap" style="margin-bottom:0">
+      <div style="padding:.875rem 1.125rem;border-bottom:1px solid var(--border);font-size:11px;font-weight:500;text-transform:uppercase;letter-spacing:.07em;color:var(--navy)">Token Payload</div>
+      <div style="padding:1rem 1.125rem">
+        ${[['Subject (uid)',session?.uid],['Name',session?.name],['Email',session?.email],['Role',session?.role],['Issued',new Date(session?.loginAt||Date.now()).toLocaleString()],['Expires','7 days from login'],['Issuer','veridian-bank-360']].map(([k,v])=>`
+        <div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--border);font-size:12.5px">
+          <span style="color:var(--muted)">${k}</span>
+          <span style="font-family:'DM Mono',monospace;color:var(--navy);font-size:12px">${v||'—'}</span>
+        </div>`).join('')}
+      </div>
+    </div>
+  </div>
+  <div class="table-wrap" style="margin-bottom:0">
+    <div style="padding:.875rem 1.125rem;border-bottom:1px solid var(--border);font-size:11px;font-weight:500;text-transform:uppercase;letter-spacing:.07em;color:var(--navy)">Permissions in Token</div>
+    <div style="padding:1rem 1.125rem;display:flex;flex-wrap:wrap;gap:6px">
+      ${(PERMISSIONS[session?.role]||[]).map(p=>`<span class="perm-tag" style="font-size:11px">${p}</span>`).join('')}
+    </div>
+  </div>`;
+}
+
+// ─── CONFIRM DIALOG ──────────────────────────────────────
+function confirm2(title,msg,cb){
+  document.getElementById('confirmTitle').textContent=title;
+  document.getElementById('confirmMsg').textContent=msg;
+  confirmCallback=cb;
+  document.getElementById('confirmOverlay').classList.add('show');
+}
+document.getElementById('confirmCancel').addEventListener('click',()=>document.getElementById('confirmOverlay').classList.remove('show'));
+document.getElementById('confirmOk').addEventListener('click',()=>{
+  document.getElementById('confirmOverlay').classList.remove('show');
+  if(confirmCallback)confirmCallback();confirmCallback=null;
+});
+
+// ─── TOAST ────────────────────────────────────────────────
+function toast(msg,type){
+  const el=document.getElementById('toastEl');
+  el.textContent=msg;el.className='toast '+(type||'ok')+' show';
+  clearTimeout(toastTmr);toastTmr=setTimeout(()=>el.className='toast',3200);
+}
+
+
+// ── ANIMATED BLOB BACKGROUND ───────────────────────────
+(function(){
+  const canvas=document.getElementById('blob-canvas');
+  const ctx=canvas.getContext('2d');
+  function resize(){canvas.width=window.innerWidth;canvas.height=window.innerHeight;}
+  resize();window.addEventListener('resize',resize);
+  const blobs=[
+    {x:0.1, y:0.15,r:0.30,vx:0.00015,vy:0.00011,color:'rgba(39,39,87,0.28)'},
+    {x:0.80,y:0.60,r:0.26,vx:-0.00013,vy:0.00015,color:'rgba(162,174,157,0.22)'},
+    {x:0.5, y:0.90,r:0.20,vx:0.00018,vy:-0.00009,color:'rgba(155,19,19,0.18)'},
+    {x:0.90,y:0.10,r:0.22,vx:-0.00014,vy:0.00013,color:'rgba(39,39,87,0.16)'},
+    {x:0.30,y:0.50,r:0.16,vx:0.00010,vy:-0.00016,color:'rgba(162,174,157,0.16)'},
+    {x:0.60,y:0.25,r:0.18,vx:-0.00009,vy:0.00018,color:'rgba(155,19,19,0.12)'},
+  ];
+  let t=0;
+  function draw(){
+    t++;
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    blobs.forEach((b,i)=>{
+      b.x+=b.vx*(1+0.3*Math.sin(t*0.002+i));
+      b.y+=b.vy*(1+0.3*Math.cos(t*0.002+i*1.3));
+      if(b.x<-0.1)b.vx=Math.abs(b.vx);
+      if(b.x>1.1) b.vx=-Math.abs(b.vx);
+      if(b.y<-0.1)b.vy=Math.abs(b.vy);
+      if(b.y>1.1) b.vy=-Math.abs(b.vy);
+      const cx=b.x*canvas.width,cy=b.y*canvas.height;
+      const rx=b.r*canvas.width*(1+0.08*Math.sin(t*0.003+i));
+      const ry=b.r*canvas.height*(1+0.08*Math.cos(t*0.003+i*0.7));
+      const maxR=Math.max(rx,ry);
+      const grad=ctx.createRadialGradient(cx,cy,0,cx,cy,maxR);
+      grad.addColorStop(0,b.color);
+      grad.addColorStop(1,'rgba(0,0,0,0)');
+      ctx.save();
+      ctx.scale(rx/maxR,ry/maxR);
+      ctx.beginPath();
+      ctx.arc(cx*(maxR/rx),cy*(maxR/ry),maxR,0,Math.PI*2);
+      ctx.fillStyle=grad;
+      ctx.fill();
+      ctx.restore();
+    });
+    requestAnimationFrame(draw);
+  }
+  draw();
+})();
+
+// ─── BOOT ─────────────────────────────────────────────────
+ensureUsers();
+addAudit('ACCESS',`${session?.name} opened Admin Panel`);
+render();
+</script>
+</body>
+</html>

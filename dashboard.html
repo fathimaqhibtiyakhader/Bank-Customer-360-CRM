@@ -1,0 +1,1003 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Veridian — Customer 360 Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&family=DM+Sans:wght@300;400;500&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --sage:#A2AE9D;--sage-l:#c8d1c4;--sage-d:#6a7a66;--sage-bg:#f0f3ef;
+  --crimson:#9B1313;--crimson-l:#f5e8e8;--crimson-d:#7a0e0e;
+  --navy:#272757;--navy-d:#1a1a3e;--navy-l:#3a3a72;--navy-bg:#eeeef6;
+  --white:#fff;--bg:#f7f6f3;
+  --text:#1a1a2e;--muted:#8a8a9a;--light:#b5b5c5;
+  --border:#e8e6e2;--sw:240px;
+  --green:#3a7a3a;--amber:#e09000;
+}
+html,body{height:100%;font-family:'DM Sans',sans-serif;font-size:14px;color:var(--text);background:var(--bg)}
+.app{display:flex;height:100vh;overflow:hidden;position:relative;z-index:1}
+
+/* ── SIDEBAR ── */
+.sb{width:var(--sw);flex-shrink:0;background:var(--navy-d);display:flex;flex-direction:column;position:relative;overflow:hidden}
+.sb::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 80% 60% at -20% 100%,rgba(155,19,19,.2) 0%,transparent 60%),radial-gradient(ellipse 60% 40% at 120% 0%,rgba(162,174,157,.1) 0%,transparent 55%);pointer-events:none}
+.sb-brand{padding:1.375rem 1.25rem .875rem;display:flex;align-items:center;gap:10px;border-bottom:1px solid rgba(255,255,255,.07);position:relative;z-index:1}
+.lmk{width:34px;height:34px;background:var(--sage);border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;position:relative;overflow:hidden}
+.lmk::before{content:'';position:absolute;width:17px;height:17px;border-radius:50%;border:2px solid var(--navy);top:50%;left:50%;transform:translate(-50%,-50%)}
+.lmk::after{content:'';position:absolute;width:8px;height:8px;background:var(--navy);border-radius:50%;top:50%;left:50%;transform:translate(-50%,-50%)}
+.bname{font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:500;color:#fff;letter-spacing:.06em}
+.ns{padding:.625rem 1rem;position:relative;z-index:1;overflow-y:auto;flex:1}
+.nl{font-size:10px;text-transform:uppercase;letter-spacing:.12em;color:rgba(255,255,255,.22);margin-bottom:.4rem;padding:0 .25rem}
+.ni{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:8px;color:rgba(255,255,255,.5);font-size:13px;cursor:pointer;transition:.15s;margin-bottom:2px;border:1px solid transparent;position:relative;user-select:none}
+.ni:hover{color:#fff;background:rgba(255,255,255,.06)}
+.ni.act{color:#fff;background:rgba(255,255,255,.1);border-color:rgba(162,174,157,.2)}
+.ni.act .nic{color:var(--sage-l)}
+.nic{width:15px;height:15px;flex-shrink:0;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.nbadge{margin-left:auto;background:var(--crimson);color:#fff;font-size:10px;font-weight:500;padding:1px 6px;border-radius:10px}
+.sb-foot{padding:.875rem 1.25rem;border-top:1px solid rgba(255,255,255,.07);position:relative;z-index:1}
+.ucard{display:flex;align-items:center;gap:10px;padding:8px;border-radius:8px;cursor:pointer;transition:.15s}
+.ucard:hover{background:rgba(255,255,255,.06)}
+.uav{width:32px;height:32px;border-radius:50%;background:var(--sage);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:500;color:var(--navy);flex-shrink:0}
+.uname{font-size:12px;font-weight:500;color:#fff;line-height:1.2}
+.urole{font-size:11px;color:rgba(255,255,255,.32)}
+.logout-btn{margin-left:auto;background:none;border:none;cursor:pointer;color:rgba(255,255,255,.28);padding:4px;transition:.15s}
+.logout-btn:hover{color:var(--crimson)}
+
+/* ── MAIN ── */
+.main{flex:1;overflow-y:auto;display:flex;flex-direction:column}
+.topbar{background:#fff;border-bottom:1px solid var(--border);padding:.75rem 1.5rem;display:flex;align-items:center;gap:1rem;position:sticky;top:0;z-index:10}
+.tb-title{font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:400;color:var(--navy)}
+.sw{flex:1;max-width:360px;margin-left:auto;position:relative}
+.sw input{width:100%;padding:8px 14px 8px 34px;background:var(--bg);border:1px solid var(--border);border-radius:8px;font-family:'DM Sans',sans-serif;font-size:13px;color:var(--text);outline:none;transition:.2s}
+.sw input:focus{border-color:var(--sage);background:#fff;box-shadow:0 0 0 3px rgba(162,174,157,.12)}
+.sw svg{position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--light)}
+.tb-acts{display:flex;align-items:center;gap:8px}
+.ibtn{width:36px;height:36px;border-radius:8px;border:1px solid var(--border);background:transparent;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--muted);transition:.15s;position:relative}
+.ibtn:hover{background:var(--bg);color:var(--navy)}
+.ndot{position:absolute;top:6px;right:6px;width:7px;height:7px;border-radius:50%;background:var(--crimson);border:1.5px solid #fff}
+
+/* ── CONTENT ── */
+.content{padding:1.5rem;flex:1}
+.kpi-row{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:1.5rem}
+.kpi{background:#fff;border:1px solid var(--border);border-radius:12px;padding:1rem 1.125rem;transition:.2s;cursor:default;position:relative;overflow:hidden}
+.kpi::after{content:'';position:absolute;top:0;left:0;width:3px;height:100%;border-radius:3px 0 0 3px;background:var(--navy);opacity:0;transition:.2s}
+.kpi:hover{box-shadow:0 2px 14px rgba(39,39,87,.07);transform:translateY(-1px)}
+.kpi:hover::after{opacity:1}
+.kpi-label{font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:var(--light);margin-bottom:4px}
+.kpi-value{font-family:'Cormorant Garamond',serif;font-size:26px;font-weight:400;color:var(--navy);line-height:1.1;margin-bottom:4px}
+.kpi-delta{font-size:11px;display:flex;align-items:center;gap:3px}
+.up{color:var(--green)}.dn{color:var(--crimson)}.nt{color:var(--light)}
+
+/* ── CUSTOMER HEADER ── */
+.cust-hd{background:#fff;border:1px solid var(--border);border-radius:12px;padding:1.125rem 1.25rem;display:flex;align-items:center;gap:1.25rem;margin-bottom:1.5rem}
+.cav{width:52px;height:52px;border-radius:50%;background:linear-gradient(135deg,var(--navy) 0%,var(--navy-l) 100%);display:flex;align-items:center;justify-content:center;font-family:'Cormorant Garamond',serif;font-size:18px;font-weight:500;color:#fff;flex-shrink:0}
+.cname{font-family:'Cormorant Garamond',serif;font-size:21px;font-weight:400;color:var(--navy);margin-bottom:5px}
+.ctags{display:flex;gap:6px;flex-wrap:wrap}
+.tag{font-size:11px;padding:2px 9px;border-radius:99px;font-weight:500}
+.t-kyc{background:rgba(58,122,58,.1);color:var(--green);border:1px solid rgba(58,122,58,.2)}
+.t-seg{background:var(--navy-bg);color:var(--navy);border:1px solid rgba(39,39,87,.15)}
+.t-low{background:rgba(162,174,157,.15);color:var(--sage-d);border:1px solid rgba(162,174,157,.3)}
+.t-med{background:rgba(200,160,40,.1);color:#9a7800;border:1px solid rgba(200,160,40,.2)}
+.cstats{display:flex;gap:1.5rem;margin-left:auto}
+.cstat .val{font-family:'DM Mono',monospace;font-size:15px;font-weight:500;color:var(--navy);line-height:1}
+.cstat .lbl{font-size:10px;color:var(--light);text-transform:uppercase;letter-spacing:.06em;margin-top:2px}
+.cust-sel{display:flex;align-items:center;gap:8px;margin-left:auto}
+.cust-sel select{border:1px solid var(--border);border-radius:8px;padding:6px 10px;font-family:'DM Sans',sans-serif;font-size:13px;color:var(--navy);background:#fff;outline:none;cursor:pointer}
+
+/* ── TWO COL LAYOUT ── */
+.two{display:grid;grid-template-columns:1fr 330px;gap:14px;margin-bottom:1.5rem}
+
+/* ── CARDS ── */
+.card{background:#fff;border:1px solid var(--border);border-radius:12px;overflow:hidden;margin-bottom:14px}
+.card:last-child{margin-bottom:0}
+.ch{padding:.875rem 1.125rem;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.ct{font-size:11px;font-weight:500;color:var(--navy);text-transform:uppercase;letter-spacing:.07em}
+.va{font-size:12px;color:var(--sage-d);cursor:pointer;transition:.15s}
+.va:hover{color:var(--crimson)}
+.cb{padding:.875rem 1.125rem}
+
+/* ── TABS ── */
+.tab-row{display:flex;gap:4px;padding:.625rem .875rem;border-bottom:1px solid var(--border);background:#fafafa}
+.tab-btn{padding:5px 14px;border-radius:6px;border:none;background:transparent;font-family:'DM Sans',sans-serif;font-size:12px;color:var(--muted);cursor:pointer;transition:.15s}
+.tab-btn:hover{background:var(--bg)}
+.tab-btn.act{background:var(--navy);color:#fff}
+.tab-pane{display:none;padding:.875rem 1.125rem}
+.tab-pane.act{display:block}
+
+/* ── PRODUCTS ── */
+.pgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.pcard{padding:.875rem;border:1px solid var(--border);border-radius:10px;transition:.15s;cursor:pointer;position:relative;overflow:hidden}
+.pcard::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:var(--navy);transform:scaleX(0);transform-origin:left;transition:.2s}
+.pcard:hover{border-color:var(--sage);background:var(--sage-bg)}
+.pcard:hover::before{transform:scaleX(1)}
+.pt{font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:var(--light);margin-bottom:4px;display:flex;align-items:center;gap:6px}
+.pd{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+.pn{font-size:13px;font-weight:500;color:var(--navy);margin-bottom:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pnum{font-family:'DM Mono',monospace;font-size:11px;color:var(--muted);margin-bottom:5px}
+.pbal{font-family:'Cormorant Garamond',serif;font-size:18px;font-weight:400;color:var(--navy)}
+.pmeta{font-size:11px;color:var(--light);margin-top:1px}
+
+/* ── TIMELINE ── */
+.tl-item{display:flex;gap:11px;padding:.875rem 0;border-bottom:1px solid var(--border);cursor:pointer;transition:.15s}
+.tl-item:last-child{border-bottom:none}
+.tl-item:hover .tl-title{color:var(--crimson)}
+.tlic{width:34px;height:34px;border-radius:9px;flex-shrink:0;display:flex;align-items:center;justify-content:center}
+.ic-call{background:var(--navy-bg)}.ic-comp{background:var(--crimson-l)}.ic-branch{background:var(--sage-bg)}.ic-digi{background:rgba(60,130,200,.08)}
+.tl-body{flex:1;min-width:0}
+.tl-title{font-size:13px;font-weight:500;color:var(--navy);margin-bottom:2px;transition:.15s}
+.tl-desc{font-size:12px;color:var(--muted);line-height:1.4;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tl-time{font-size:11px;color:var(--light);flex-shrink:0;margin-left:auto;padding-left:8px}
+
+/* ── NOTE FORM ── */
+.note-form textarea{width:100%;padding:10px;border:1px solid var(--border);border-radius:8px;resize:none;font-family:'DM Sans',sans-serif;font-size:13px;color:var(--text);background:var(--bg);outline:none;transition:.2s;min-height:76px}
+.note-form textarea:focus{border-color:var(--sage);background:#fff;box-shadow:0 0 0 3px rgba(162,174,157,.1)}
+.nfrow{display:flex;gap:7px;margin-top:8px;flex-wrap:wrap;align-items:center}
+.ntag{padding:5px 12px;border-radius:99px;border:1px solid var(--border);font-size:12px;cursor:pointer;background:#fff;color:var(--muted);transition:.15s;font-family:'DM Sans',sans-serif}
+.ntag:hover,.ntag.act{background:var(--navy);color:#fff;border-color:var(--navy)}
+.nsave{margin-left:auto;padding:7px 16px;border-radius:8px;background:var(--navy);color:#fff;border:none;font-family:'DM Sans',sans-serif;font-size:13px;cursor:pointer;transition:.15s}
+.nsave:hover{background:var(--navy-l)}
+
+/* ── NBA ── */
+.nba-card{background:linear-gradient(135deg,var(--navy-d) 0%,#3a3a72 100%);border-radius:10px;padding:1rem;margin-bottom:8px;cursor:pointer;transition:.15s;position:relative;overflow:hidden}
+.nba-card::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 80% 60% at 100% 0%,rgba(162,174,157,.1),transparent 60%)}
+.nba-card:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(39,39,87,.22)}
+.nba-score{position:absolute;top:.875rem;right:.875rem;font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:400;color:var(--sage-l);line-height:1}
+.nba-lbl{font-size:10px;text-transform:uppercase;letter-spacing:.12em;color:var(--sage-l);margin-bottom:6px;opacity:.7}
+.nba-title{font-family:'Cormorant Garamond',serif;font-size:16px;font-weight:400;color:#fff;margin-bottom:4px}
+.nba-why{font-size:11px;color:rgba(255,255,255,.48);line-height:1.4}
+
+/* ── SERVICE REQUESTS ── */
+.sr-item{display:flex;align-items:center;gap:10px;padding:.875rem 0;border-bottom:1px solid var(--border)}
+.sr-item:last-child{border-bottom:none}
+.srdot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.d-open{background:var(--amber)}.d-prog{background:var(--green)}.d-esc{background:var(--crimson)}.d-close{background:var(--light)}
+.sr-title{font-size:13px;font-weight:500;color:var(--navy);flex:1}
+.sr-sub{font-size:11px;color:var(--light)}
+.sr-tag{font-size:10px;padding:2px 8px;border-radius:99px;font-weight:500;white-space:nowrap;flex-shrink:0}
+.tg-open{background:rgba(224,144,0,.1);color:#9a6000}
+.tg-prog{background:rgba(58,122,58,.1);color:var(--green)}
+.tg-esc{background:var(--crimson-l);color:var(--crimson)}
+.tg-close{background:rgba(0,0,0,.05);color:var(--muted)}
+
+/* ── CHART ── */
+.chart-wrap{display:flex;align-items:flex-end;gap:5px;height:90px;padding:6px 0 2px}
+.bwrap{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer}
+.bar{width:100%;border-radius:4px 4px 0 0;background:var(--navy-bg);transition:background .2s}
+.bar.hi{background:var(--navy)}
+.blbl{font-size:9px;color:var(--light)}
+.bval{font-size:9px;font-weight:500;color:var(--muted)}
+
+/* ── ACTIVITY ── */
+.feed-item{display:flex;gap:10px;padding:.75rem 0;border-bottom:1px solid var(--border)}
+.feed-item:last-child{border-bottom:none}
+.feed-dot{width:8px;height:8px;border-radius:50%;background:var(--sage);margin-top:4px;flex-shrink:0}
+.feed-text{font-size:12px;color:var(--muted);line-height:1.5;flex:1}
+.feed-text strong{color:var(--navy);font-weight:500}
+.feed-time{font-size:10px;color:var(--light);flex-shrink:0}
+
+/* ── PULSE ── */
+.pulse{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--green);position:relative;margin-right:5px}
+.pulse::after{content:'';position:absolute;inset:-3px;border-radius:50%;border:2px solid rgba(58,122,58,.3);animation:pulseAnim 2s ease infinite}
+@keyframes pulseAnim{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.4);opacity:.4}}
+
+/* ── TOAST ── */
+.toast{position:fixed;bottom:22px;right:22px;background:var(--navy-d);color:#fff;padding:11px 18px;border-radius:10px;font-size:13px;box-shadow:0 4px 20px rgba(0,0,0,.2);opacity:0;transform:translateY(8px);transition:.3s;pointer-events:none;z-index:999;max-width:300px;line-height:1.4}
+.toast.show{opacity:1;transform:translateY(0)}
+.toast.ok{border-left:3px solid var(--sage)}
+.toast.err{border-left:3px solid var(--crimson)}
+
+/* ── MODAL ── */
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:100;display:none;align-items:center;justify-content:center}
+.overlay.show{display:flex}
+.modal{background:#fff;border-radius:16px;width:500px;max-height:80vh;overflow-y:auto;padding:1.5rem;animation:fup .2s ease}
+@keyframes fup{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+.modal-title{font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:400;color:var(--navy);margin-bottom:1rem}
+.form-group{margin-bottom:.875rem}
+.form-label{display:block;font-size:11px;font-weight:500;text-transform:uppercase;letter-spacing:.07em;color:var(--navy);margin-bottom:5px}
+.form-input{width:100%;padding:9px 12px;border:1px solid var(--border);border-radius:8px;font-family:'DM Sans',sans-serif;font-size:13px;color:var(--text);outline:none;background:#fff;transition:.2s}
+.form-input:focus{border-color:var(--sage);box-shadow:0 0 0 3px rgba(162,174,157,.12)}
+.form-select{width:100%;padding:9px 12px;border:1px solid var(--border);border-radius:8px;font-family:'DM Sans',sans-serif;font-size:13px;color:var(--text);background:#fff;outline:none;cursor:pointer}
+.modal-actions{display:flex;gap:8px;justify-content:flex-end;margin-top:1.25rem}
+.btn{padding:8px 18px;border-radius:8px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;cursor:pointer;border:none;transition:.15s}
+.btn-primary{background:var(--navy);color:#fff}
+.btn-primary:hover{background:var(--navy-l)}
+.btn-ghost{background:transparent;border:1px solid var(--border);color:var(--muted)}
+.btn-ghost:hover{background:var(--bg)}
+
+/* ── SERVICE REQUEST FORM ── */
+.sr-form-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+
+
+/* ── ANIMATED BLOBS ── */
+#blob-canvas{position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:-1;opacity:0.40;}
+
+
+/* ── SR CLICKABLE ── */
+.sr-item{cursor:pointer;border-radius:8px;padding:.875rem 6px;transition:.15s;}
+.sr-item:hover{background:var(--sage-bg);}
+
+/* ── SCROLLBAR ── */
+.main::-webkit-scrollbar{width:5px}.main::-webkit-scrollbar-track{background:transparent}.main::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
+.ns::-webkit-scrollbar{width:3px}.ns::-webkit-scrollbar-thumb{background:rgba(255,255,255,.1)}
+
+@media(max-width:1100px){.two{grid-template-columns:1fr}}
+@media(max-width:900px){.kpi-row{grid-template-columns:1fr 1fr}}
+@media(max-width:600px){.sb{display:none}.kpi-row{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<canvas id="blob-canvas"></canvas>
+
+<div class="app">
+<!-- SIDEBAR -->
+<nav class="sb">
+  <div class="sb-brand">
+    <div class="lmk"></div>
+    <span class="bname">Veridian</span>
+  </div>
+  <div class="ns">
+    <div class="nl">Workspace</div>
+    <div class="ni act" data-view="dashboard">
+      <svg class="nic" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>Dashboard
+    </div>
+    <div class="ni" data-view="customers">
+      <svg class="nic" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>Customers
+    </div>
+    <div class="ni" data-view="products">
+      <svg class="nic" viewBox="0 0 24 24"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>Products
+    </div>
+    <div class="ni" data-view="service">
+      <svg class="nic" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>Service Requests<span class="nbadge" id="srCount">3</span>
+    </div>
+    <div class="nl" style="margin-top:.75rem">Intelligence</div>
+    <div class="ni" data-view="nba">
+      <svg class="nic" viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>NBA Engine
+    </div>
+    <div class="ni" data-view="analytics">
+      <svg class="nic" viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>Analytics
+    </div>
+    <div class="nl" style="margin-top:.75rem">System</div>
+    <div class="ni" data-view="admin" id="adminNavItem">
+      <svg class="nic" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>Admin Panel
+    </div>
+  </div>
+  <div class="sb-foot">
+    <div class="ucard">
+      <div class="uav" id="uav">--</div>
+      <div><div class="uname" id="unameEl">Loading</div><div class="urole" id="uroleEl">--</div></div>
+      <button class="logout-btn" id="logoutBtn" title="Sign out">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+      </button>
+    </div>
+  </div>
+</nav>
+
+<!-- MAIN -->
+<div class="main" id="mainEl">
+  <header class="topbar">
+    <div class="tb-title" id="pageTitle">Customer 360 View</div>
+    <div class="sw">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <input type="text" placeholder="Search customer, CIF, product..." id="searchInp"/>
+    </div>
+    <div class="tb-acts">
+      <button class="ibtn" title="Notifications" id="notifBtn">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+        <span class="ndot"></span>
+      </button>
+      <button class="ibtn" title="Export PDF" id="exportBtn">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+      </button>
+      <button class="ibtn" title="Add note" id="addNoteBtn">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      </button>
+    </div>
+  </header>
+  <div class="content" id="contentEl"></div>
+</div>
+</div>
+
+
+<!-- SR DETAIL MODAL -->
+<div class="overlay" id="srDetailModal">
+  <div class="modal" style="max-width:540px;padding:1.5rem">
+    <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:1.25rem">
+      <div>
+        <div class="modal-title" id="srDetailTitle" style="margin-bottom:4px">Service Request</div>
+        <div id="srDetailId" style="font-family:'DM Mono',monospace;font-size:12px;color:var(--muted)"></div>
+      </div>
+      <button onclick="document.getElementById('srDetailModal').classList.remove('show')" style="background:none;border:none;cursor:pointer;font-size:22px;color:var(--muted);line-height:1;margin-top:4px">&times;</button>
+    </div>
+    <div id="srDetailStatus" style="margin-bottom:1rem"></div>
+    <div id="srDetailBody"></div>
+    <div class="modal-actions" style="margin-top:1.25rem;border-top:1px solid var(--border);padding-top:1rem">
+      <button class="btn btn-ghost" onclick="document.getElementById('srDetailModal').classList.remove('show')">Close</button>
+      <button class="btn btn-primary" onclick="toast('Escalation action logged.','ok');document.getElementById('srDetailModal').classList.remove('show')">Take Action</button>
+    </div>
+  </div>
+</div>
+
+<!-- SERVICE REQUEST MODAL -->
+<div class="overlay" id="srModal">
+  <div class="modal">
+    <div class="modal-title">Raise Service Request</div>
+    <div class="form-group">
+      <label class="form-label">Request Type</label>
+      <select class="form-select" id="srType">
+        <option>Statement Request</option>
+        <option>Cheque Book Request</option>
+        <option>Card Dispute</option>
+        <option>Forex Query</option>
+        <option>Locker Service</option>
+        <option>KYC Update</option>
+        <option>Other</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Description</label>
+      <textarea class="form-input" id="srDesc" rows="3" style="resize:none" placeholder="Describe the request..."></textarea>
+    </div>
+    <div class="sr-form-row">
+      <div class="form-group">
+        <label class="form-label">Priority</label>
+        <select class="form-select" id="srPriority">
+          <option>Normal</option><option>High</option><option>Critical</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Channel</label>
+        <select class="form-select" id="srChannel">
+          <option>RM Desk</option><option>Branch</option><option>Phone</option><option>App</option>
+        </select>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" id="srCancel">Cancel</button>
+      <button class="btn btn-primary" id="srSubmit">Raise Request</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toastEl"></div>
+
+<script>
+// ─── DB & SESSION ────────────────────────────────────────
+const DB_KEY = 'v360_db', SESSION_KEY = 'v360_session', TTL = 7*24*60*60*1000;
+
+function getDB() {
+  try {
+    const d = JSON.parse(localStorage.getItem(DB_KEY));
+    if (d && d.expiry && Date.now() < d.expiry) return d;
+  } catch(e) {}
+  return null;
+}
+function saveDB(db) { db.expiry = Date.now() + TTL; localStorage.setItem(DB_KEY, JSON.stringify(db)); }
+
+const db = getDB();
+let session;
+try {
+  session = JSON.parse(localStorage.getItem(SESSION_KEY));
+  if (!session || !session.expiry || Date.now() >= session.expiry) throw new Error();
+} catch(e) { window.location.href = 'index.html'; }
+
+// ─── CUSTOMERS DATA ──────────────────────────────────────
+const CUSTOMERS = [
+  { id:'c1', name:'Ramesh Kumar Venkataraman', cif:'CIF-2024-8812', segment:'HNI', kyc:'Complete', risk:'Low', tenure:'6 years', rm:'Fathima Q.', mobile:'+91 98765 43210', email:'ramesh.k@gmail.com', pan:'ABCDE1234F', aadhaar:'**** **** 7741', dob:'14 March 1978', address:'42, Jubilee Hills, Hyderabad — 500033', nominee:'Priya Kumar (Spouse)', aum:'₹48.3L', products:7, nba:87 },
+  { id:'c2', name:'Sunita Rao Krishnamurthy', cif:'CIF-2023-4421', segment:'Retail', kyc:'Pending', risk:'Medium', tenure:'3 years', rm:'Datla M.', mobile:'+91 87654 32109', email:'sunita.rao@outlook.com', pan:'FGHIJ5678K', aadhaar:'**** **** 3310', dob:'22 July 1985', address:'15, Banjara Hills, Hyderabad — 500034', nominee:'Rajesh Rao (Husband)', aum:'₹12.7L', products:4, nba:72 },
+  { id:'c3', name:'Vikram Singh Chauhan', cif:'CIF-2022-1199', segment:'SME', kyc:'Complete', risk:'High', tenure:'8 years', rm:'Ravi K.', mobile:'+91 99887 76655', email:'vikram.singh@biz.in', pan:'LMNOP9012Q', aadhaar:'**** **** 9921', dob:'05 Jan 1972', address:'Plot 88, Cyberabad, Hyderabad — 500081', nominee:'Anita Singh (Spouse)', aum:'₹95.2L', products:9, nba:91 },
+];
+
+let activeCIF = 'c1';
+let currentView = 'dashboard';
+let activeNoteTag = 'Follow-up';
+let toastTmr;
+
+function getCustomer() { return CUSTOMERS.find(c => c.id === activeCIF) || CUSTOMERS[0]; }
+
+function getServiceRequests() {
+  const d = getDB();
+  return (d && d.serviceRequests) ? d.serviceRequests.filter(s => s.cif === activeCIF) : getDefaultSR();
+}
+
+function getDefaultSR() {
+  return [
+    {id:'SR-2024-0481', title:'Forex charge dispute', status:'Escalated', date:'Today', cif:'c1'},
+    {id:'SR-2024-0463', title:'Locker key renewal', status:'In Progress', date:'4 days ago', cif:'c1'},
+    {id:'SR-2024-0440', title:'Statement FY 2023-24', status:'Pending', date:'1 week ago', cif:'c1'},
+    {id:'SR-2023-0311', title:'Cheque book request', status:'Resolved', date:'2 months ago', cif:'c2'},
+    {id:'SR-2024-0510', title:'KYC document update', status:'In Progress', date:'2 days ago', cif:'c2'},
+    {id:'SR-2024-0522', title:'Business loan query', status:'Pending', date:'3 days ago', cif:'c3'},
+    {id:'SR-2024-0498', title:'FD premature closure', status:'Escalated', date:'1 week ago', cif:'c3'},
+  ];
+}
+
+function getNotes() {
+  const d = getDB();
+  return (d && d.notes) ? d.notes.filter(n => n.cif === activeCIF) : [];
+}
+
+function saveNote(text, tag) {
+  const d = getDB() || {};
+  if (!d.notes) d.notes = [];
+  d.notes.unshift({id:'note'+Date.now(), cif: activeCIF, text, tag, ts: new Date().toLocaleString(), rm: session.name});
+  saveDB(d);
+}
+
+function saveSR(sr) {
+  const d = getDB() || {};
+  if (!d.serviceRequests) d.serviceRequests = getDefaultSR();
+  d.serviceRequests.unshift(sr);
+  saveDB(d);
+}
+
+// ─── INIT ────────────────────────────────────────────────
+document.getElementById('uav').textContent = session.initials || session.name.split(' ').map(x=>x[0]).join('').slice(0,2).toUpperCase();
+document.getElementById('unameEl').textContent = session.name;
+document.getElementById('uroleEl').textContent = {rm:'Relationship Manager', admin:'Administrator', supervisor:'Supervisor'}[session.role] || session.role;
+if (session.role !== 'admin') document.getElementById('adminNavItem').style.display = 'none';
+
+document.getElementById('logoutBtn').addEventListener('click', () => {
+  localStorage.removeItem(SESSION_KEY);
+  toast('Signed out. See you soon!', 'ok');
+  setTimeout(() => window.location.href = 'index.html', 700);
+});
+
+// ─── NAVIGATION ──────────────────────────────────────────
+document.querySelectorAll('.ni').forEach(n => {
+  n.addEventListener('click', () => {
+    const v = n.dataset.view;
+    if (v === 'admin') { window.location.href = 'admin.html'; return; }
+    document.querySelectorAll('.ni').forEach(x => x.classList.remove('act'));
+    n.classList.add('act');
+    currentView = v;
+    render();
+  });
+});
+
+document.getElementById('notifBtn').addEventListener('click', () => toast('3 unread: FD maturity alert, NBA recommendation, SR escalation.', 'ok'));
+document.getElementById('exportBtn').addEventListener('click', () => toast(`Generating PDF export for ${getCustomer().name}…`, 'ok'));
+document.getElementById('addNoteBtn').addEventListener('click', () => { currentView='dashboard'; render(); setTimeout(()=>document.getElementById('noteArea')?.focus(),100); });
+document.getElementById('searchInp').addEventListener('input', function(){ if(this.value.length > 2) toast(`Searching "${this.value}"…`, 'ok'); });
+
+// ─── RENDER ──────────────────────────────────────────────
+function render() {
+  const c = getCustomer();
+  const titles = {dashboard:'Customer 360 View', customers:'Customer Directory', products:'Products Held', service:'Service Requests', nba:'NBA Engine', analytics:'Analytics', admin:'Admin Panel'};
+  document.getElementById('pageTitle').textContent = titles[currentView] || 'Veridian';
+  const el = document.getElementById('contentEl');
+  if (currentView === 'dashboard') el.innerHTML = renderDashboard(c);
+  else if (currentView === 'customers') el.innerHTML = renderCustomers();
+  else if (currentView === 'products') el.innerHTML = renderProducts(c);
+  else if (currentView === 'service') el.innerHTML = renderServicePage(c);
+  else if (currentView === 'nba') el.innerHTML = renderNBAPage(c);
+  else if (currentView === 'analytics') el.innerHTML = renderAnalytics(c);
+  else el.innerHTML = `<div style="text-align:center;padding:4rem;color:var(--muted)">View not available in this context.</div>`;
+  attachContentEvents();
+}
+
+function renderDashboard(c) {
+  const srs = getServiceRequests();
+  const openSR = srs.filter(s => s.status !== 'Resolved').length;
+  const notes = getNotes();
+  return `
+  <div style="display:flex;align-items:center;gap:10px;margin-bottom:1.25rem">
+    <div style="font-size:11px;color:var(--muted)">Viewing customer:</div>
+    <select id="custSelector" style="border:1px solid var(--border);border-radius:8px;padding:5px 10px;font-family:'DM Sans',sans-serif;font-size:13px;color:var(--navy);background:#fff;outline:none;cursor:pointer">
+      ${CUSTOMERS.map(cu=>`<option value="${cu.id}" ${cu.id===activeCIF?'selected':''}>${cu.name} — ${cu.cif}</option>`).join('')}
+    </select>
+  </div>
+  <div class="kpi-row">
+    <div class="kpi"><div class="kpi-label">Total AUM</div><div class="kpi-value">${c.aum}</div><div class="kpi-delta up"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"/></svg>+12.4% this quarter</div></div>
+    <div class="kpi"><div class="kpi-label">Active Products</div><div class="kpi-value">${c.products}</div><div class="kpi-delta nt">Across 4 categories</div></div>
+    <div class="kpi"><div class="kpi-label">Open Requests</div><div class="kpi-value">${openSR}</div><div class="kpi-delta dn"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>${srs.filter(s=>s.status==='Escalated').length} escalated</div></div>
+    <div class="kpi"><div class="kpi-label">NBA Score</div><div class="kpi-value">${c.nba}<span style="font-size:13px;color:var(--light)">/100</span></div><div class="kpi-delta up">High opportunity</div></div>
+  </div>
+  <div class="cust-hd">
+    <div class="cav">${c.name.split(' ').map(x=>x[0]).slice(0,2).join('')}</div>
+    <div style="flex:1">
+      <div class="cname">${c.name}</div>
+      <div class="ctags">
+        <span class="tag t-kyc"><span class="pulse"></span>KYC ${c.kyc}</span>
+        <span class="tag t-seg">${c.segment} Segment</span>
+        <span class="tag t-${c.risk==='Low'?'low':'med'}">${c.risk} Risk</span>
+        <span class="tag t-seg" style="background:rgba(162,174,157,.12);color:var(--sage-d);border-color:rgba(162,174,157,.25)">RM: ${c.rm}</span>
+      </div>
+    </div>
+    <div class="cstats">
+      <div class="cstat"><div class="val">${c.cif}</div><div class="lbl">CIF Number</div></div>
+      <div class="cstat"><div class="val">${c.tenure}</div><div class="lbl">Relationship</div></div>
+      <div class="cstat"><div class="val" style="color:var(--sage-d)">Active</div><div class="lbl">Status</div></div>
+    </div>
+  </div>
+  <div class="two">
+    <div>
+      <div class="card">
+        <div class="ch"><span class="ct">Customer Detail</span><span class="va" id="detailViewAll">View all &rarr;</span></div>
+        <div class="tab-row">
+          <button class="tab-btn act" onclick="switchTab(this,'prod')">Products Held</button>
+          <button class="tab-btn" onclick="switchTab(this,'inter')">Interactions</button>
+          <button class="tab-btn" onclick="switchTab(this,'profile')">Profile</button>
+          <button class="tab-btn" onclick="switchTab(this,'history')">History</button>
+        </div>
+        <div class="tab-pane act" id="pane-prod">${renderProductsGrid()}</div>
+        <div class="tab-pane" id="pane-inter">${renderInteractions()}</div>
+        <div class="tab-pane" id="pane-profile">${renderProfilePane(c)}</div>
+        <div class="tab-pane" id="pane-history">${renderHistory(notes)}</div>
+      </div>
+      <div class="card">
+        <div class="ch"><span class="ct">Add Note</span></div>
+        <div class="cb note-form">
+          <textarea id="noteArea" placeholder="Add a call note, follow-up, or observation…"></textarea>
+          <div class="nfrow">
+            <button class="ntag act" onclick="selectNoteTag(this,'Follow-up')">Follow-up</button>
+            <button class="ntag" onclick="selectNoteTag(this,'Complaint')">Complaint</button>
+            <button class="ntag" onclick="selectNoteTag(this,'Opportunity')">Opportunity</button>
+            <button class="nsave" onclick="doSaveNote()">Save note</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div>
+      <div class="card">
+        <div class="ch"><span class="ct">Next Best Action</span><span class="va" onclick="currentView='nba';render()">Configure &rarr;</span></div>
+        <div class="cb" style="display:flex;flex-direction:column;gap:0">${renderNBACards(c)}</div>
+      </div>
+      <div class="card">
+        <div class="ch"><span class="ct">Service Requests</span><span class="va" onclick="openSRModal()">+ Raise</span></div>
+        <div class="cb" style="padding-top:0;padding-bottom:0">${renderSRItems(srs.slice(0,3))}</div>
+      </div>
+      <div class="card">
+        <div class="ch"><span class="ct">Transaction Volume</span><span style="font-size:11px;color:var(--light)">Last 7 months</span></div>
+        <div class="cb"><div class="chart-wrap" id="chartWrap"></div></div>
+      </div>
+    </div>
+  </div>`;
+}
+
+function renderProductsGrid() {
+  const c = getCustomer();
+  const products = [
+    {type:'Liability', color:'var(--navy)', name:'Premier Savings', num:'**** **** 4421', bal:'₹12,48,320', meta:'3.5% p.a. · Active', msg:'Savings: last credit ₹45,000 — 2 days ago. No pending cheques.'},
+    {type:'Liability', color:'#3a6ea5', name:'Fixed Deposit', num:'FD-2022-7741', bal:'₹25,00,000', meta:'⚠ Matures in 28 days', warn:true, msg:'FD matures in 28 days — renewal opportunity flagged!'},
+    {type:'Asset', color:'var(--crimson)', name:'Home Loan', num:'HL-2020-0033', bal:'₹38,12,000', meta:'8.75% p.a. · 14 yrs left', msg:'EMI ₹38,400 due on 5th. 0 missed EMIs on record.'},
+    {type:'Investment', color:'var(--sage-d)', name:'Equity MF SIP', num:'MF-SIP-9920', bal:'₹8,74,500', meta:'+18.4% returns · 3 yrs', msg:'SIP increased to ₹10k/month. +18.4% returns this year.'},
+  ];
+  return `<div class="pgrid">${products.map(p=>`
+    <div class="pcard" onclick="toast('${p.msg}','ok')">
+      <div class="pt"><span class="pd" style="background:${p.color}"></span>${p.type}</div>
+      <div class="pn">${p.name}</div>
+      <div class="pnum">${p.num}</div>
+      <div class="pbal">${p.bal}</div>
+      <div class="pmeta" style="${p.warn?'color:var(--amber)':''}">${p.meta}</div>
+    </div>`).join('')}</div>`;
+}
+
+function renderInteractions() {
+  return `
+  <div class="tl-item" onclick="toast('Call log: FD maturity discussed. Interested in step-up FD. Follow-up set.','ok')">
+    <div class="tlic ic-call"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--navy)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 10.5 19.79 19.79 0 0 1 1.56 2a2 2 0 0 1 2-2.18h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg></div>
+    <div class="tl-body"><div class="tl-title">Outbound call — FD maturity</div><div class="tl-desc">Discussed renewal options. Customer interested in step-up FD.</div></div>
+    <div class="tl-time">Today 11:20am</div>
+  </div>
+  <div class="tl-item" onclick="toast('Complaint SR-2024-0481: ₹1,200 forex markup disputed. Under review.','err')">
+    <div class="tlic ic-comp"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--crimson)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg></div>
+    <div class="tl-body"><div class="tl-title">Complaint — Forex charge dispute</div><div class="tl-desc">₹1,200 markup disputed. Ticket SR-2024-0481 raised.</div></div>
+    <div class="tl-time">Yesterday</div>
+  </div>
+  <div class="tl-item" onclick="toast('Branch visit Indiranagar. Account update + locker key renewal.','ok')">
+    <div class="tlic ic-branch"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--sage-d)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></div>
+    <div class="tl-body"><div class="tl-title">Branch visit — Indiranagar</div><div class="tl-desc">Account update + locker key renewal. Assisted by branch manager.</div></div>
+    <div class="tl-time">3 days ago</div>
+  </div>
+  <div class="tl-item" onclick="toast('Mobile app: SIP increased from ₹8k to ₹10k/month. Auto-processed.','ok')">
+    <div class="tlic ic-digi"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#3a82c8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg></div>
+    <div class="tl-body"><div class="tl-title">Mobile app — SIP increase</div><div class="tl-desc">SIP increased ₹8k to ₹10k/month via app. Processed.</div></div>
+    <div class="tl-time">1 week ago</div>
+  </div>`;
+}
+
+function renderProfilePane(c) {
+  return `<div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+    <div><div style="font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:var(--light);margin-bottom:3px">Full name</div><div style="font-size:13px;font-weight:500;color:var(--navy)">${c.name}</div></div>
+    <div><div style="font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:var(--light);margin-bottom:3px">Date of birth</div><div style="font-size:13px;color:var(--navy)">${c.dob}</div></div>
+    <div><div style="font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:var(--light);margin-bottom:3px">PAN</div><div style="font-family:'DM Mono',monospace;font-size:13px;color:var(--navy)">${c.pan}</div></div>
+    <div><div style="font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:var(--light);margin-bottom:3px">Aadhaar</div><div style="font-family:'DM Mono',monospace;font-size:13px;color:var(--navy)">${c.aadhaar}</div></div>
+    <div><div style="font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:var(--light);margin-bottom:3px">Mobile</div><div style="font-size:13px;color:var(--navy)">${c.mobile}</div></div>
+    <div><div style="font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:var(--light);margin-bottom:3px">Email</div><div style="font-size:13px;color:var(--navy)">${c.email}</div></div>
+    <div style="grid-column:1/-1"><div style="font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:var(--light);margin-bottom:3px">Address</div><div style="font-size:13px;color:var(--navy)">${c.address}</div></div>
+    <div><div style="font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:var(--light);margin-bottom:3px">Nominee</div><div style="font-size:13px;color:var(--navy)">${c.nominee}</div></div>
+    <div><div style="font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:var(--light);margin-bottom:3px">Risk Category</div><div><span class="tag t-${c.risk==='Low'?'low':'med'}">${c.risk} Risk</span></div></div>
+  </div>`;
+}
+
+function renderHistory(notes) {
+  const staticFeed = [
+    {color:'var(--sage)', text:'<strong>SIP amount updated</strong> — ₹8,000 to ₹10,000/month by RM Fathima Q.', time:'1 week ago'},
+    {color:'var(--crimson)', text:'<strong>Complaint raised</strong> — Forex charge SR-2024-0481 created by customer.', time:'Yesterday'},
+    {color:'var(--sage)', text:'<strong>KYC refreshed</strong> — Aadhaar e-KYC completed. Status: Complete.', time:'2 weeks ago'},
+    {color:'var(--sage)', text:'<strong>Segment upgraded</strong> — Retail to HNI. AUM crossed ₹40L threshold.', time:'1 month ago'},
+    {color:'var(--navy-l)', text:'<strong>FD renewed</strong> — FD-2022-7741 renewed for 24 months at 7.1% p.a.', time:'2 years ago'},
+  ];
+  const noteFeed = notes.map(n => ({color:'#c8a000', text:`<strong>Note [${n.tag}]</strong> by ${n.rm}: ${n.text}`, time: n.ts}));
+  return [...noteFeed, ...staticFeed].map(f => `
+    <div class="feed-item"><div class="feed-dot" style="background:${f.color}"></div>
+    <div class="feed-text">${f.text}</div><div class="feed-time">${f.time}</div></div>`).join('');
+}
+
+function renderNBACards(c) {
+  const cards = [
+    {score:95, label:'Top recommendation', title:'Home Loan Top-up', why:"FD matures 28 days · 3 salary credits · no loan inquiry", g1:'var(--navy-d)', g2:'#3a3a72', msg:'Presenting Home Loan Top-up. Reason: FD matures in 28 days + 3 salary credits.'},
+    {score:81, label:'Upgrade', title:'Wealth Account Upgrade', why:`AUM ${c.aum} · no premium plan · ${c.tenure} loyalty`, g1:'var(--sage-d)', g2:'#8a9a86', msg:`Wealth Account upgrade: AUM ${c.aum} + ${c.tenure} loyalty qualifies for Premier tier.`},
+    {score:74, label:'Cross-sell', title:'Travel Insurance', why:'3 intl transactions · no insurance held', g1:'#5a3a3a', g2:'var(--crimson-d)', msg:'Travel Insurance: 3 international card swipes last quarter + no insurance product on file.'},
+  ];
+  return cards.map((b,i) => `
+    <div class="nba-card" style="background:linear-gradient(135deg,${b.g1} 0%,${b.g2} 100%);${i===cards.length-1?'margin-bottom:0':''}" onclick="toast('${b.msg}','ok')">
+      <div class="nba-score" style="${i>0?'color:rgba(255,255,255,.65)':''}">${b.score}</div>
+      <div class="nba-lbl" style="${i>0?'color:rgba(255,255,255,.55)':''}">${b.label}</div>
+      <div class="nba-title">${b.title}</div>
+      <div class="nba-why">${b.why}</div>
+    </div>`).join('');
+}
+
+function renderSRItems(srs) {
+  if (!srs.length) return '<div style="padding:1rem;text-align:center;font-size:13px;color:var(--muted)">No open requests</div>';
+  const statusMap = {'Escalated':'tg-esc d-esc', 'In Progress':'tg-prog d-prog', 'Pending':'tg-open d-open', 'Resolved':'tg-close d-close'};
+  return srs.map(s => {
+    const cls = statusMap[s.status] || 'tg-open d-open';
+    const [tagCls, dotCls] = cls.split(' ');
+    return `<div class="sr-item" onclick="openSRDetail('${s.id}','${s.title}','${s.status}')">
+      <div class="srdot ${dotCls}"></div>
+      <div style="flex:1"><div class="sr-title">${s.title}</div><div class="sr-sub">${s.id} · ${s.date}</div></div>
+      <span class="sr-tag ${tagCls}">${s.status}</span>
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--light)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;margin-left:4px"><polyline points="9 18 15 12 9 6"/></svg>
+    </div>`;
+  }).join('');
+}
+
+function renderCustomers() {
+  return `<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px">
+    ${CUSTOMERS.map(c => `
+    <div class="card" style="cursor:pointer;margin-bottom:0" onclick="activeCIF='${c.id}';currentView='dashboard';document.querySelectorAll('.ni').forEach(x=>x.classList.remove('act'));document.querySelector('[data-view=dashboard]').classList.add('act');render()">
+      <div class="cb" style="padding:1.25rem">
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:.875rem">
+          <div class="cav" style="width:44px;height:44px;font-size:16px">${c.name.split(' ').map(x=>x[0]).slice(0,2).join('')}</div>
+          <div><div style="font-family:'Cormorant Garamond',serif;font-size:18px;font-weight:400;color:var(--navy)">${c.name}</div><div style="font-family:'DM Mono',monospace;font-size:11px;color:var(--muted)">${c.cif}</div></div>
+        </div>
+        <div class="ctags" style="margin-bottom:.875rem">
+          <span class="tag t-${c.risk==='Low'?'low':'med'}">${c.risk} Risk</span>
+          <span class="tag t-seg">${c.segment}</span>
+          <span class="tag t-kyc">KYC ${c.kyc}</span>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;border-top:1px solid var(--border);padding-top:.75rem">
+          <div><div style="font-family:'Cormorant Garamond',serif;font-size:16px;color:var(--navy)">${c.aum}</div><div style="font-size:10px;color:var(--light);text-transform:uppercase;letter-spacing:.06em">AUM</div></div>
+          <div><div style="font-family:'Cormorant Garamond',serif;font-size:16px;color:var(--navy)">${c.products}</div><div style="font-size:10px;color:var(--light);text-transform:uppercase;letter-spacing:.06em">Products</div></div>
+          <div><div style="font-family:'Cormorant Garamond',serif;font-size:16px;color:var(--navy)">${c.nba}</div><div style="font-size:10px;color:var(--light);text-transform:uppercase;letter-spacing:.06em">NBA Score</div></div>
+        </div>
+      </div>
+    </div>`).join('')}
+  </div>`;
+}
+
+function renderProducts(c) {
+  const products = [
+    {type:'Savings Account', cat:'Liability', color:'var(--navy)', num:'**** **** 4421', bal:'₹12,48,320', rate:'3.5% p.a.', status:'Active', opened:'Jan 2018'},
+    {type:'Fixed Deposit', cat:'Liability', color:'#3a6ea5', num:'FD-2022-7741', bal:'₹25,00,000', rate:'7.1% p.a.', status:'Maturing in 28 days', opened:'Jan 2022'},
+    {type:'Home Loan', cat:'Asset', color:'var(--crimson)', num:'HL-2020-0033', bal:'₹38,12,000 outstanding', rate:'8.75% p.a.', status:'Active', opened:'Mar 2020'},
+    {type:'Equity MF SIP', cat:'Investment', color:'var(--sage-d)', num:'MF-SIP-9920', bal:'₹8,74,500', rate:'+18.4% returns', status:'Active', opened:'Apr 2021'},
+    {type:'Credit Card', cat:'Liability', color:'#8a5ca8', num:'**** **** **** 7721', bal:'₹48,200 outstanding', rate:'3.5% p.m.', status:'Active', opened:'Jun 2019'},
+    {type:'Term Insurance', cat:'Insurance', color:'#5a8a6a', num:'INS-LT-0012', bal:'₹50L cover', rate:'₹12,400 premium/yr', status:'Active', opened:'Feb 2020'},
+    {type:'PPF Account', cat:'Investment', color:'#c8a000', num:'PPF-2019-4492', bal:'₹4,20,000', rate:'7.1% p.a.', status:'Active', opened:'Sep 2019'},
+  ];
+  return `
+  <div class="cust-hd" style="margin-bottom:1.25rem">
+    <div class="cav">${c.name.split(' ').map(x=>x[0]).slice(0,2).join('')}</div>
+    <div style="flex:1"><div class="cname">${c.name}</div><div class="ctags"><span class="tag t-seg">${c.segment}</span><span class="tag t-kyc">KYC ${c.kyc}</span></div></div>
+    <div class="cstats"><div class="cstat"><div class="val">${c.aum}</div><div class="lbl">Total AUM</div></div><div class="cstat"><div class="val">${c.products}</div><div class="lbl">Products</div></div></div>
+  </div>
+  <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px">
+    ${products.map(p => `
+    <div class="card" style="margin-bottom:0;cursor:pointer" onclick="toast('${p.type}: ${p.bal} · ${p.rate} · ${p.status}','ok')">
+      <div class="cb" style="padding:1rem">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:.5rem">
+          <div style="width:8px;height:8px;border-radius:50%;background:${p.color};flex-shrink:0"></div>
+          <div style="font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:var(--light)">${p.cat}</div>
+        </div>
+        <div style="font-size:14px;font-weight:500;color:var(--navy);margin-bottom:4px">${p.type}</div>
+        <div style="font-family:'DM Mono',monospace;font-size:11px;color:var(--muted);margin-bottom:8px">${p.num}</div>
+        <div style="font-family:'Cormorant Garamond',serif;font-size:20px;color:var(--navy);margin-bottom:2px">${p.bal}</div>
+        <div style="font-size:11px;color:var(--light)">${p.rate} · <span style="color:var(--green)">${p.status}</span></div>
+        <div style="font-size:10px;color:var(--light);margin-top:6px">Opened: ${p.opened}</div>
+      </div>
+    </div>`).join('')}
+  </div>`;
+}
+
+function renderServicePage(c) {
+  const srs = getServiceRequests();
+  return `
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.25rem">
+    <div style="font-size:13px;color:var(--muted)">Customer: <strong style="color:var(--navy)">${c.name}</strong> · ${c.cif}</div>
+    <button class="btn btn-primary" onclick="openSRModal()" style="background:var(--navy);color:#fff;border:none;padding:8px 16px;border-radius:8px;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:13px">+ Raise Request</button>
+  </div>
+  <div class="card" style="margin-bottom:0">
+    <div class="ch"><span class="ct">All Service Requests</span><span style="font-size:11px;color:var(--muted)">${srs.length} requests</span></div>
+    <div style="padding:.5rem 1.125rem">
+      ${srs.length ? srs.map(s => {
+        const statusMap = {'Escalated':'tg-esc d-esc','In Progress':'tg-prog d-prog','Pending':'tg-open d-open','Resolved':'tg-close d-close'};
+        const cls = statusMap[s.status] || 'tg-open d-open';
+        const [tagCls,dotCls] = cls.split(' ');
+        return `<div class="sr-item" onclick="openSRDetail('${s.id}','${s.title}','${s.status}')">
+          <div class="srdot ${dotCls}"></div>
+          <div style="flex:1"><div class="sr-title">${s.title}</div><div class="sr-sub">${s.id} · ${s.date}</div></div>
+          <span class="sr-tag ${tagCls}">${s.status}</span>
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--light)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;margin-left:4px"><polyline points="9 18 15 12 9 6"/></svg>
+        </div>`;
+      }).join('') : '<div style="padding:2rem;text-align:center;color:var(--muted)">No service requests for this customer.</div>'}
+    </div>
+  </div>`;
+}
+
+function renderNBAPage(c) {
+  const rules = [
+    {title:'FD Maturity Cross-sell', condition:'FD matures within 30 days AND no active loan', action:'Offer Home Loan Top-up or Reinvestment FD', score:95, status:'Active'},
+    {title:'Wealth Upgrade Trigger', condition:'AUM > ₹40L AND no premium banking plan', action:'Upgrade to Premier Wealth Account', score:81, status:'Active'},
+    {title:'Travel Insurance', condition:'≥3 international transactions in 90 days AND no insurance', action:'Cross-sell Travel Insurance pack', score:74, status:'Active'},
+    {title:'SIP Increase', condition:'Salary credit > ₹1L AND SIP < 10% of income', action:'Suggest SIP top-up to 10% ratio', score:68, status:'Active'},
+    {title:'Credit Card Upgrade', condition:'Spend > ₹50k/month AND standard card', action:'Upgrade to Signature/Infinite card', score:62, status:'Draft'},
+  ];
+  return `
+  <div class="cust-hd" style="margin-bottom:1.25rem">
+    <div class="cav">${c.name.split(' ').map(x=>x[0]).slice(0,2).join('')}</div>
+    <div style="flex:1"><div class="cname">${c.name}</div><div class="ctags"><span class="tag t-seg">${c.segment}</span></div></div>
+    <div class="cstats"><div class="cstat"><div class="val" style="color:var(--sage-d)">${c.nba}/100</div><div class="lbl">NBA Score</div></div></div>
+  </div>
+  <div class="two">
+    <div>
+      <div class="card" style="margin-bottom:0">
+        <div class="ch"><span class="ct">Active Rules</span></div>
+        <div style="padding:.5rem 1.125rem">
+          ${rules.map(r => `
+          <div style="padding:.875rem 0;border-bottom:1px solid var(--border)">
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:5px">
+              <div style="font-size:13px;font-weight:500;color:var(--navy)">${r.title}</div>
+              <span style="font-size:10px;padding:2px 8px;border-radius:99px;font-weight:500;background:${r.status==='Active'?'rgba(58,122,58,.1)':'rgba(0,0,0,.05)'};color:${r.status==='Active'?'var(--green)':'var(--muted)'}">${r.status}</span>
+              <span style="margin-left:auto;font-family:'Cormorant Garamond',serif;font-size:18px;color:var(--navy)">${r.score}</span>
+            </div>
+            <div style="font-size:12px;color:var(--muted);margin-bottom:3px"><strong style="color:var(--navy)">Condition:</strong> ${r.condition}</div>
+            <div style="font-size:12px;color:var(--muted)"><strong style="color:var(--navy)">Action:</strong> ${r.action}</div>
+          </div>`).join('')}
+        </div>
+      </div>
+    </div>
+    <div>
+      <div class="card" style="margin-bottom:0">
+        <div class="ch"><span class="ct">Recommendations</span></div>
+        <div class="cb" style="display:flex;flex-direction:column;gap:0">${renderNBACards(c)}</div>
+      </div>
+    </div>
+  </div>`;
+}
+
+function renderAnalytics(c) {
+  const months = ['Nov','Dec','Jan','Feb','Mar','Apr','May'];
+  const vals = [42,68,55,81,63,90,74];
+  const max = Math.max(...vals);
+  return `
+  <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:1.5rem">
+    <div class="kpi"><div class="kpi-label">Portfolio Growth</div><div class="kpi-value">+12.4%</div><div class="kpi-delta up">This quarter</div></div>
+    <div class="kpi"><div class="kpi-label">Avg Transaction</div><div class="kpi-value">₹68k</div><div class="kpi-delta nt">Last 90 days</div></div>
+    <div class="kpi"><div class="kpi-label">Cross-sell Ratio</div><div class="kpi-value">2.8x</div><div class="kpi-delta up">Above segment avg</div></div>
+  </div>
+  <div class="card" style="margin-bottom:1.5rem">
+    <div class="ch"><span class="ct">Transaction Volume — ${c.name}</span></div>
+    <div class="cb">
+      <div class="chart-wrap" id="bigChart" style="height:160px">
+        ${months.map((m,i)=>{
+          const h = Math.round((vals[i]/max)*140);
+          return `<div class="bwrap">
+            <div class="bval">${vals[i]}k</div>
+            <div class="bar${vals[i]===max?' hi':''}" style="height:${h}px" title="${m}: ₹${vals[i]}k"></div>
+            <div class="blbl">${m}</div>
+          </div>`;
+        }).join('')}
+      </div>
+    </div>
+  </div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+    <div class="card" style="margin-bottom:0">
+      <div class="ch"><span class="ct">Product Allocation</span></div>
+      <div class="cb">
+        ${[['Savings',25,'var(--navy)'],['Fixed Deposits',42,'#3a6ea5'],['Loans',18,'var(--crimson)'],['Investments',15,'var(--sage-d)']].map(([n,p,c_])=>
+        `<div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
+          <div style="width:8px;height:8px;border-radius:50%;background:${c_}"></div>
+          <div style="flex:1;font-size:13px">${n}</div>
+          <div style="width:100px;height:4px;background:var(--border);border-radius:2px"><div style="width:${p}%;height:100%;background:${c_};border-radius:2px"></div></div>
+          <div style="font-size:12px;color:var(--muted);min-width:30px;text-align:right">${p}%</div>
+        </div>`).join('')}
+      </div>
+    </div>
+    <div class="card" style="margin-bottom:0">
+      <div class="ch"><span class="ct">Recent Activity Feed</span></div>
+      <div class="cb" style="padding-top:0;padding-bottom:0">
+        <div class="feed-item"><div class="feed-dot"></div><div class="feed-text"><strong>SIP top-up</strong> — ₹8k to ₹10k by RM.</div><div class="feed-time">1w ago</div></div>
+        <div class="feed-item"><div class="feed-dot" style="background:var(--crimson)"></div><div class="feed-text"><strong>Complaint raised</strong> — Forex SR-0481.</div><div class="feed-time">1d ago</div></div>
+        <div class="feed-item"><div class="feed-dot"></div><div class="feed-text"><strong>KYC refreshed</strong> — Aadhaar e-KYC done.</div><div class="feed-time">2w ago</div></div>
+        <div class="feed-item"><div class="feed-dot"></div><div class="feed-text"><strong>Segment upgrade</strong> — Retail → HNI.</div><div class="feed-time">1mo ago</div></div>
+      </div>
+    </div>
+  </div>`;
+}
+
+// ─── EVENTS ──────────────────────────────────────────────
+function attachContentEvents() {
+  const sel = document.getElementById('custSelector');
+  if (sel) sel.addEventListener('change', function(){ activeCIF = this.value; render(); });
+  renderBarChart();
+}
+
+function renderBarChart() {
+  const wrap = document.getElementById('chartWrap');
+  if (!wrap) return;
+  const months=['Nov','Dec','Jan','Feb','Mar','Apr','May'], vals=[42,68,55,81,63,90,74], max=Math.max(...vals);
+  wrap.innerHTML = '';
+  months.forEach((m,i) => {
+    const h = Math.round((vals[i]/max)*76), isMax = vals[i]===max;
+    const bw=document.createElement('div'); bw.className='bwrap';
+    const bv=document.createElement('div'); bv.className='bval'; bv.textContent=vals[i]+'k';
+    const bar=document.createElement('div'); bar.className='bar'+(isMax?' hi':''); bar.style.height=h+'px';
+    const bl=document.createElement('div'); bl.className='blbl'; bl.textContent=m;
+    bar.addEventListener('click',()=>toast(`${m}: ₹${vals[i]},000 in transactions`,'ok'));
+    bar.addEventListener('mouseenter',()=>bar.style.background='var(--navy)');
+    bar.addEventListener('mouseleave',()=>bar.style.background=isMax?'var(--navy)':'var(--navy-bg)');
+    bw.appendChild(bv); bw.appendChild(bar); bw.appendChild(bl); wrap.appendChild(bw);
+  });
+}
+
+function switchTab(btn, pane) {
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('act'));
+  document.querySelectorAll('.tab-pane').forEach(p=>p.classList.remove('act'));
+  btn.classList.add('act');
+  document.getElementById('pane-'+pane)?.classList.add('act');
+}
+
+function selectNoteTag(btn, tag) {
+  document.querySelectorAll('.ntag').forEach(b=>b.classList.remove('act'));
+  btn.classList.add('act'); activeNoteTag = tag;
+}
+
+function doSaveNote() {
+  const txt = document.getElementById('noteArea')?.value.trim();
+  if (!txt) { toast('Please write something before saving.', 'err'); return; }
+  saveNote(txt, activeNoteTag);
+  toast(`Note [${activeNoteTag}] saved and added to interaction log.`, 'ok');
+  document.getElementById('noteArea').value='';
+  render();
+}
+
+function openSRModal() {
+  document.getElementById('srModal').classList.add('show');
+}
+document.getElementById('srCancel').addEventListener('click', () => document.getElementById('srModal').classList.remove('show'));
+document.getElementById('srModal').addEventListener('click', function(e){ if(e.target===this) this.classList.remove('show'); });
+document.getElementById('srSubmit').addEventListener('click', () => {
+  const type = document.getElementById('srType').value;
+  const desc = document.getElementById('srDesc').value.trim();
+  const priority = document.getElementById('srPriority').value;
+  const channel = document.getElementById('srChannel').value;
+  if (!desc) { toast('Please describe the request.', 'err'); return; }
+  const sr = {id:'SR-'+Date.now().toString().slice(-7), title:type, desc, priority, channel, status:'Pending', date:'Just now', cif: activeCIF};
+  saveSR(sr);
+  document.getElementById('srModal').classList.remove('show');
+  document.getElementById('srDesc').value='';
+  toast(`Service request ${sr.id} raised successfully.`, 'ok');
+  if (currentView === 'service') render();
+  // update badge
+  const d = getDB();
+  const cnt = d && d.serviceRequests ? d.serviceRequests.filter(s=>s.status!=='Resolved').length : 3;
+  const badge = document.getElementById('srCount');
+  if (badge) badge.textContent = cnt;
+});
+
+// ─── TOAST ───────────────────────────────────────────────
+function toast(msg, type) {
+  const el = document.getElementById('toastEl');
+  el.textContent=msg; el.className='toast '+(type||'ok')+' show';
+  clearTimeout(toastTmr); toastTmr=setTimeout(()=>el.className='toast', 3200);
+}
+
+
+// ── SR DETAIL DATA ──────────────────────────────────────
+const SR_EXTRA = {
+  'SR-2024-0481':{type:'Forex Charge Dispute',priority:'High',channel:'Branch',assignedTo:'Fathima Qhibtiya',sla:'4 hours',created:'Today, 09:15 AM',lastUpdated:'Today, 11:42 AM',desc:'Customer disputed a \u20b91,200 forex markup on an international POS transaction (Amazon UK, 12-Nov-2024). Customer claims they were not informed of the 3.5% cross-currency markup. Under review by Forex Operations team.',resolution:'Pending investigation by Forex Ops. Expected closure by EOD.',history:['09:15 AM \u2014 SR raised at Branch by RM.','09:45 AM \u2014 Escalated to Forex Operations.','11:42 AM \u2014 Under review. Customer notified via SMS.']},
+  'SR-2024-0463':{type:'Locker Service',priority:'Normal',channel:'Branch',assignedTo:'Fathima Qhibtiya',sla:'2 business days',created:'4 days ago',lastUpdated:'2 days ago',desc:'Customer requests renewal of locker key for Locker #L-48 at Jubilee Hills branch. Previous key was worn and difficult to operate. Branch manager confirmed locker is operational but key replacement is pending.',resolution:'Awaiting spare key from inventory. ETA: 1 business day.',history:['4 days ago \u2014 SR raised at branch.','3 days ago \u2014 Key replacement initiated.','2 days ago \u2014 Pending inventory dispatch.']},
+  'SR-2024-0440':{type:'Statement Request',priority:'Normal',channel:'RM Desk',assignedTo:'Fathima Qhibtiya',sla:'24 hours',created:'1 week ago',lastUpdated:'6 days ago',desc:'Customer requested a full account statement for FY 2023-24 (Apr 2023 \u2013 Mar 2024) for Premier Savings Account. Required for income tax filing. Both email and physical copy requested.',resolution:'Statement generated and dispatched. Awaiting customer acknowledgement.',history:['1 week ago \u2014 SR raised via RM Desk.','6 days ago \u2014 Statement generated via core banking.','6 days ago \u2014 Emailed to registered email.']},
+  'SR-2023-0311':{type:'Cheque Book Request',priority:'Normal',channel:'App',assignedTo:'Datla Mahija',sla:'3 business days',created:'2 months ago',lastUpdated:'2 months ago',desc:'Customer requested a new 25-leaf cheque book for their savings account. Previous cheque book was exhausted. Request initiated via mobile banking app.',resolution:'Cheque book dispatched via courier. Delivered and acknowledged.',history:['2 months ago \u2014 Request via mobile app.','2 months ago \u2014 Dispatched via courier.','2 months ago \u2014 Delivered & closed.']},
+  'SR-2024-0510':{type:'KYC Document Update',priority:'High',channel:'Branch',assignedTo:'Datla Mahija',sla:'48 hours',created:'2 days ago',lastUpdated:'Today',desc:'Customer\'s KYC documents have expired. Aadhaar and PAN need to be updated in the system. Customer visited branch with original documents. Verification pending from back office.',resolution:'Documents scanned and submitted to back office. Awaiting digital verification.',history:['2 days ago \u2014 Customer visited branch with docs.','2 days ago \u2014 Documents scanned.','Today \u2014 Pending back office verification.']},
+  'SR-2024-0522':{type:'Business Loan Query',priority:'Normal',channel:'RM Desk',assignedTo:'Ravi Kumar',sla:'24 hours',created:'3 days ago',lastUpdated:'2 days ago',desc:'Customer inquired about a \u20b950L working capital loan for business expansion. Existing SME account holder for 8 years. RM has initiated credit assessment. Customer to submit 3-year financials.',resolution:'Credit assessment in progress. Customer notified of document requirements.',history:['3 days ago \u2014 Query received via RM Desk.','2 days ago \u2014 Credit team assessment initiated.','2 days ago \u2014 Customer notified of docs needed.']},
+  'SR-2024-0498':{type:'FD Premature Closure',priority:'High',channel:'Branch',assignedTo:'Ravi Kumar',sla:'24 hours',created:'1 week ago',lastUpdated:'5 days ago',desc:'Customer requests premature closure of FD #FD-2021-4498 (\u20b920L, 7.1% p.a.) due to emergency medical expenses. Penalty clause applies (1% deduction on premature withdrawal). Customer aware of penalty.',resolution:'Closure request submitted. Pending authorization from branch manager.',history:['1 week ago \u2014 Request raised at branch.','6 days ago \u2014 Penalty clause explained to customer.','5 days ago \u2014 Awaiting branch manager authorization.']},
+};
+
+function openSRDetail(srId, title, status) {
+  const extra = SR_EXTRA[srId] || {};
+  const statusMap={'Escalated':'tg-esc','In Progress':'tg-prog','Pending':'tg-open','Resolved':'tg-close'};
+  const tagCls = statusMap[status] || 'tg-open';
+  document.getElementById('srDetailTitle').textContent = extra.type || title;
+  document.getElementById('srDetailId').textContent = srId;
+  document.getElementById('srDetailStatus').innerHTML = `<span class="sr-tag ${tagCls}" style="font-size:12px;padding:3px 12px">${status}</span>`;
+  const meta = [
+    ['Priority', extra.priority||'Normal'],
+    ['Channel', extra.channel||'—'],
+    ['Assigned To', extra.assignedTo||'—'],
+    ['SLA', extra.sla||'—'],
+    ['Created', extra.created||'—'],
+    ['Last Updated', extra.lastUpdated||'—'],
+  ];
+  const histHtml = (extra.history||[]).map(h=>`<div style="display:flex;gap:8px;padding:5px 0;border-bottom:1px solid var(--border);font-size:12px;color:var(--muted)"><span style="color:var(--sage-d);flex-shrink:0">&#8250;</span>${h}</div>`).join('');
+  document.getElementById('srDetailBody').innerHTML = `
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px 16px;background:var(--bg);border-radius:8px;padding:.875rem;margin-bottom:1rem">
+      ${meta.map(([k,v])=>`<div><div style="font-size:10px;text-transform:uppercase;letter-spacing:.07em;color:var(--light);margin-bottom:2px">${k}</div><div style="font-size:13px;font-weight:500;color:var(--navy)">${v}</div></div>`).join('')}
+    </div>
+    <div style="margin-bottom:1rem">
+      <div style="font-size:11px;font-weight:500;text-transform:uppercase;letter-spacing:.07em;color:var(--navy);margin-bottom:6px">Description</div>
+      <div style="font-size:13px;color:var(--text);line-height:1.6;background:#fff;border:1px solid var(--border);border-radius:8px;padding:.875rem">${extra.desc||'No description available.'}</div>
+    </div>
+    ${extra.resolution?`<div style="margin-bottom:1rem"><div style="font-size:11px;font-weight:500;text-transform:uppercase;letter-spacing:.07em;color:var(--navy);margin-bottom:6px">Resolution / Next Steps</div><div style="font-size:13px;color:var(--text);line-height:1.6;background:rgba(162,174,157,.1);border:1px solid rgba(162,174,157,.25);border-radius:8px;padding:.875rem">${extra.resolution}</div></div>`:''}
+    ${histHtml?`<div><div style="font-size:11px;font-weight:500;text-transform:uppercase;letter-spacing:.07em;color:var(--navy);margin-bottom:6px">Activity Timeline</div>${histHtml}</div>`:''}
+  `;
+  document.getElementById('srDetailModal').classList.add('show');
+}
+
+// ─── BOOT ────────────────────────────────────────────────
+render();
+
+// ── ANIMATED BLOB BACKGROUND ───────────────────────────
+(function(){
+  const canvas=document.getElementById('blob-canvas');
+  const ctx=canvas.getContext('2d');
+  function resize(){canvas.width=window.innerWidth;canvas.height=window.innerHeight;}
+  resize();window.addEventListener('resize',resize);
+  const blobs=[
+    {x:0.1, y:0.15,r:0.30,vx:0.00015,vy:0.00011,color:'rgba(39,39,87,0.28)'},
+    {x:0.80,y:0.60,r:0.26,vx:-0.00013,vy:0.00015,color:'rgba(162,174,157,0.22)'},
+    {x:0.5, y:0.90,r:0.20,vx:0.00018,vy:-0.00009,color:'rgba(155,19,19,0.18)'},
+    {x:0.90,y:0.10,r:0.22,vx:-0.00014,vy:0.00013,color:'rgba(39,39,87,0.16)'},
+    {x:0.30,y:0.50,r:0.16,vx:0.00010,vy:-0.00016,color:'rgba(162,174,157,0.16)'},
+    {x:0.60,y:0.25,r:0.18,vx:-0.00009,vy:0.00018,color:'rgba(155,19,19,0.12)'},
+  ];
+  let t=0;
+  function draw(){
+    t++;
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    blobs.forEach((b,i)=>{
+      b.x+=b.vx*(1+0.3*Math.sin(t*0.002+i));
+      b.y+=b.vy*(1+0.3*Math.cos(t*0.002+i*1.3));
+      if(b.x<-0.1)b.vx=Math.abs(b.vx);
+      if(b.x>1.1) b.vx=-Math.abs(b.vx);
+      if(b.y<-0.1)b.vy=Math.abs(b.vy);
+      if(b.y>1.1) b.vy=-Math.abs(b.vy);
+      const cx=b.x*canvas.width,cy=b.y*canvas.height;
+      const rx=b.r*canvas.width*(1+0.08*Math.sin(t*0.003+i));
+      const ry=b.r*canvas.height*(1+0.08*Math.cos(t*0.003+i*0.7));
+      const maxR=Math.max(rx,ry);
+      const grad=ctx.createRadialGradient(cx,cy,0,cx,cy,maxR);
+      grad.addColorStop(0,b.color);
+      grad.addColorStop(1,'rgba(0,0,0,0)');
+      ctx.save();
+      ctx.scale(rx/maxR,ry/maxR);
+      ctx.beginPath();
+      ctx.arc(cx*(maxR/rx),cy*(maxR/ry),maxR,0,Math.PI*2);
+      ctx.fillStyle=grad;
+      ctx.fill();
+      ctx.restore();
+    });
+    requestAnimationFrame(draw);
+  }
+  draw();
+})();
+
+</script>
+</body>
+</html>
